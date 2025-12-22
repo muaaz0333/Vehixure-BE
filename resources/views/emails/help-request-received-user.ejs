@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Support Request Received – Papero</title>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+      body { font-family: 'Poppins', Arial, sans-serif; background-color: #f4f4f7; margin: 0; padding: 0; }
+      .email-wrapper { width: 100%; padding: 40px 0; background-color: #f4f4f7; }
+      .email-content { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden; }
+      .header { background-color: #1a82e2; color: white; text-align: center; padding: 20px; font-size: 22px; font-weight: 600; }
+      .body { padding: 30px; color: #333; text-align: left; }
+      .section { background-color: #f9fbff; padding: 18px; border-radius: 8px; margin: 12px 0; }
+      .footer { padding: 20px; font-size: 13px; color: #999; text-align: center; border-top: 1px solid #eee; }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="email-content">
+        <div class="header">We've received your request</div>
+        <div class="body">
+          <p>Hi <strong><%= userName %></strong>,</p>
+
+          <p>Thanks for contacting Papero Support. We've received your request titled:</p>
+
+          <div class="section">
+            <p><strong><%= title %></strong></p>
+            <p style="white-space:pre-wrap;"><%= description %></p>
+            <p class="small"><strong>Reference ID:</strong> <%= requestId %></p>
+          </div>
+
+          <p>Our support team will review your request and get back to you as soon as possible. If you need to add more information, reply to this email or create a new support request in your account.</p>
+
+          <p>Best regards,<br/>Papero Support Team</p>
+        </div>
+        <div class="footer">© <%= new Date().getFullYear() %> Papero</div>
+      </div>
+    </div>
+  </body>
+</html>
