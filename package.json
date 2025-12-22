@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yonathan06/fastify-typescript-starter.git"
+    "url": "https://github.com/muaaz0333/Vehixure-BE.git"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -27,12 +27,7 @@
     "fastify",
     "typescript"
   ],
-  "author": "Yonatan Bendahan",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/yonathan06/fastify-typescript-starter/issues"
-  },
-  "homepage": "https://github.com/yonathan06/fastify-typescript-starter#readme",
   "dependencies": {
     "@fastify/cors": "^11.0.1",
     "@fastify/jwt": "^9.1.0",
