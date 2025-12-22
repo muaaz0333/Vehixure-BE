@@ -1,6 +1,6 @@
-# papero-backend
+# backend
 
-A modern backend boilerplate for papero, built with Fastify and TypeScript.
+A modern backend boilerplate, built with Fastify and TypeScript.
 
 ## Features
 - Fastify server with TypeScript
