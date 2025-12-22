@@ -5,7 +5,6 @@ import {
   sendOtp,
   verifyOtp,
   resendOtp,
-  firebaseSignIn,
   forgetPassword,
   resetPasswordWithCode,
   changePassword,
@@ -93,24 +92,6 @@ const TokenData = Type.Object({
 // 🔹 Routes
 export default async function authRoutes(fastify: FastifyInstance) {
 
-  // ✅ Firebase Sign-In route
-  fastify.post(
-    '/firebase-signin',
-    {
-      schema: {
-        body: FirebaseSignInBody,
-        response: {
-          200: SuccessResponse(UserData),
-          400: ErrorResponse,
-        },
-        tags: ['Auth'],
-        summary: 'Sign in or Sign up using Google Sign-In',
-        description:
-          'Accepts a Google ID token from the client, verifies it using Firebase Admin SDK, and returns a JWT for backend authentication.',
-      },
-    },
-    firebaseSignIn
-  );
 
   fastify.post(
     '/register',
