@@ -81,7 +81,7 @@ server.addHook('onReady', async () => {
     }
     
   } catch (error) {
-    server.log.error('❌ Failed to initialize ERPS system:', error);
+    server.log.error({ err: error }, '❌ Failed to initialize ERPS system');
     // Don't throw error to prevent server startup failure
   }
 });
@@ -94,7 +94,7 @@ server.addHook('onClose', async () => {
       server.log.info('✅ ERPS cron jobs stopped gracefully');
     }
   } catch (error) {
-    server.log.error('❌ Error stopping cron jobs during shutdown:', error);
+    server.log.error({ err: error }, '❌ Error stopping cron jobs during shutdown');
   }
 });
 
