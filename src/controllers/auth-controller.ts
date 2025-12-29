@@ -38,7 +38,7 @@ export const register = async (req: FastifyRequest, reply: FastifyReply) => {
     });
   }
   const hashed = await bcrypt.hash(password, 10);
-  const user = repo.create({ email: userEmail, password: hashed, fullName, dob });
+  const user = repo.create({ email: userEmail, password: hashed, fullName, dob, role: 'PARTNER_USER' });
   console.log("User creation data:", { email: userEmail, fullName, dob, id: user.id });
   await repo.save(user);
   // create default notification preference for new user
@@ -56,7 +56,7 @@ export const register = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     await email.send({
       to: user.email,
-      subject: 'Verify Your Papero Account',
+      subject: 'Verify Your Account',
       html,
     });
     console.log(`✅ Verification email sent to: ${user.email}`);
@@ -97,7 +97,13 @@ export const login = async (req: FastifyRequest, reply: FastifyReply) => {
   const valid = await bcrypt.compare(password, user?.password || '');
   if (!valid) return Response.errorResponse(reply, 'Invalid credentials', 401);
   // const token = req.server.jwt.sign({ id: user.id, email: user.email });
-  const token = req.server.jwt.sign({ id: user.id, email: user.email, role: user.role });
+  const token = req.server.jwt.sign({ 
+    id: user.id, 
+    email: user.email, 
+    role: user.role,
+    partnerRole: user.partnerRole,
+    partnerAccountId: user.partnerAccountId
+  });
   return Response.showOne(reply, {
     success: true,
     message: 'Login successful',
@@ -130,7 +136,7 @@ export const resendEmailOtp = async (req: FastifyRequest, reply: FastifyReply) =
 
     await email.send({
       to: user.email,
-      subject: 'Resend Verification Code - Papero',
+      subject: 'Resend Verification Code',
       html,
     });
 
@@ -173,7 +179,7 @@ export const resendPasswordOtp = async (req: FastifyRequest, reply: FastifyReply
 
     await email.send({
       to: user.email,
-      subject: 'Resend Password Reset Code - Papero',
+      subject: 'Resend Password Reset Code',
       html,
     });
 
@@ -258,7 +264,7 @@ export const sendOtp = async (req: FastifyRequest, reply: FastifyReply) => {
 
     const otpCode = Math.floor(10000 + Math.random() * 90000).toString();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
-    const messageBody = `Your Papero verification code is: ${otpCode}. It expires in 5 minutes.`;
+    const messageBody = `Your verification code is: ${otpCode}. It expires in 5 minutes.`;
 
     await sendSms(phone, messageBody); // implement Twilio or other service here
 
@@ -346,7 +352,7 @@ export const resendOtp = async (req: FastifyRequest, reply: FastifyReply) => {
     const otpCode = Math.floor(10000 + Math.random() * 90000).toString();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
-    const messageBody = `Your new Papero verification code is: ${otpCode}. It expires in 5 minutes.`;
+    const messageBody = `Your new verification code is: ${otpCode}. It expires in 5 minutes.`;
 
     await sendSms(user.phone, messageBody);
 
@@ -381,6 +387,185 @@ export const resetPasswordWithCode = async (req: FastifyRequest, reply: FastifyR
   } catch (err: any) {
     console.error('❌ resetPasswordWithCode error:', err);
     return Response.errorResponse(reply, err.message || 'Something went wrong');
+  }
+};
+
+/**
+ * 👥 Get all partner users (ERPS Admin only)
+ */
+export const getPartnerUsers = async (req: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const currentUser = (req as any).user;
+    
+    if (currentUser.role !== 'ERPS_ADMIN') {
+      return Response.errorResponse(reply, 'Only ERPS Admin can view all partner users', 403);
+    }
+
+    const repo = req.server.db.getRepository(User);
+    const partnerUsers = await repo.find({
+      where: { role: 'PARTNER_USER', isDeleted: false },
+      select: [
+        'id', 'email', 'fullName', 'phone', 'mobileNumber', 'partnerRole', 
+        'partnerAccountId', 'isAccreditedInstaller', 'isAuthorisedInspector',
+        'installerCertificationNumber', 'inspectorCertificationNumber',
+        'isVerified', 'isBlocked', 'created'
+      ]
+    });
+
+    return Response.showAll(reply, partnerUsers);
+  } catch (err: any) {
+    console.error('❌ getPartnerUsers error:', err);
+    return Response.errorResponse(reply, err.message || 'Failed to retrieve partner users');
+  }
+};
+
+/**
+ * 👥 Get all installers (ERPS Admin only)
+ */
+export const getInstallers = async (req: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const currentUser = (req as any).user;
+    
+    if (currentUser.role !== 'ERPS_ADMIN') {
+      return Response.errorResponse(reply, 'Only ERPS Admin can view all installers', 403);
+    }
+
+    const repo = req.server.db.getRepository(User);
+    const installers = await repo.find({
+      where: { 
+        role: 'PARTNER_USER', 
+        partnerRole: 'ACCOUNT_INSTALLER',
+        isDeleted: false 
+      },
+      select: [
+        'id', 'email', 'fullName', 'phone', 'mobileNumber', 'partnerAccountId',
+        'isAccreditedInstaller', 'isAuthorisedInspector',
+        'installerCertificationNumber', 'inspectorCertificationNumber',
+        'installerCertificationDate', 'inspectorCertificationDate',
+        'isVerified', 'isBlocked', 'created'
+      ]
+    });
+
+    return Response.showAll(reply, installers);
+  } catch (err: any) {
+    console.error('❌ getInstallers error:', err);
+    return Response.errorResponse(reply, err.message || 'Failed to retrieve installers');
+  }
+};
+
+/**
+ * 🔐 ERPS Admin login as partner user
+ */
+export const adminLoginAs = async (req: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const { targetUserId } = req.body as any;
+    const adminUser = (req as any).user;
+
+    if (!targetUserId) {
+      return Response.errorResponse(reply, 'Target user ID is required', 400);
+    }
+
+    // Verify the current user is an ERPS admin
+    if (adminUser.role !== 'ERPS_ADMIN') {
+      return Response.errorResponse(reply, 'Only ERPS Admin can login as other users', 403);
+    }
+
+    const repo = req.server.db.getRepository(User);
+    const targetUser = await repo.findOneBy({ 
+      id: targetUserId, 
+      isDeleted: false 
+    });
+
+    if (!targetUser) {
+      return Response.errorResponse(reply, 'Target user not found', 404);
+    }
+
+    // Only allow login as partner users
+    if (targetUser.role !== 'PARTNER_USER') {
+      return Response.errorResponse(reply, 'Can only login as partner users', 400);
+    }
+
+    if (targetUser.isBlocked) {
+      return Response.errorResponse(reply, 'Target user is blocked', 400);
+    }
+
+    // Generate token for the target user
+    const token = req.server.jwt.sign({ 
+      id: targetUser.id, 
+      email: targetUser.email, 
+      role: targetUser.role,
+      partnerRole: targetUser.partnerRole,
+      partnerAccountId: targetUser.partnerAccountId,
+      adminLoginAs: true, // Flag to indicate this is an admin login
+      originalAdminId: adminUser.id
+    });
+
+    return Response.showOne(reply, {
+      success: true,
+      message: `Successfully logged in as ${targetUser.partnerRole?.toLowerCase() || 'partner user'}`,
+      data: {
+        ...targetUser,
+        token,
+        adminLoginAs: true,
+        originalAdmin: {
+          id: adminUser.id,
+          email: adminUser.email
+        }
+      },
+    });
+  } catch (err: any) {
+    console.error('❌ adminLoginAs error:', err);
+    return Response.errorResponse(reply, err.message || 'Failed to login as user');
+  }
+};
+
+/**
+ * 👤 Get Current User (authenticated)
+ */
+export const getCurrentUser = async (req: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const userId = (req as any).user?.id;
+    
+    if (!userId) {
+      return Response.errorResponse(reply, 'User not authenticated', 401);
+    }
+
+    const repo = req.server.db.getRepository(User);
+    const user = await repo.findOne({
+      where: { id: userId, isDeleted: false },
+      select: [
+        'id', 'email', 'fullName', 'dob', 'phone', 'mobileNumber',
+        'role', 'partnerRole', 'partnerAccountId', 'isVerified', 
+        'isEmailVerified', 'isPhoneVerified', 'isBlocked', 'accountStatus',
+        'isAccreditedInstaller', 'isAuthorisedInspector',
+        'installerCertificationNumber', 'inspectorCertificationNumber',
+        'installerCertificationDate', 'inspectorCertificationDate',
+        'languagePreference', 'isAllowedNotification', 'created', 'modified'
+      ]
+    });
+
+    if (!user) {
+      return Response.errorResponse(reply, 'User not found', 404);
+    }
+
+    if (user.isBlocked) {
+      return Response.errorResponse(reply, 'User account is blocked', 403);
+    }
+
+    return Response.showOne(reply, {
+      success: true,
+      message: 'Current user retrieved successfully',
+      data: {
+        user: {
+          ...user,
+          // Don't include sensitive information
+          password: undefined
+        }
+      }
+    });
+  } catch (err: any) {
+    console.error('❌ getCurrentUser error:', err);
+    return Response.errorResponse(reply, err.message || 'Failed to retrieve current user');
   }
 };
 

@@ -1,0 +1,1652 @@
+{
+  "info": {
+    "name": "ERPS Partner Portal - FINAL COMPLETE API Collection (SQA Ready)",
+    "description": "Complete Postman collection for ERPS Partner Portal with ALL gap resolutions implemented. Includes automated reminders, grace period enforcement, warranty reinstatement, enhanced photo validation, inspection checklists, and complete audit trails. Ready for SQA team presentation.",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5050/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountAdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountStaffToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountInstallerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partnerAccountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "warrantyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inspectionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "verificationToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "photoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "checklistItemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reminderId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "User authentication endpoints for all ERPS user roles",
+      "item": [
+        {
+          "name": "Login - ERPS Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('adminToken', response.data.token);",
+                  "        console.log('✅ ERPS Admin token saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@erps.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as ERPS Admin - has full platform governance and oversight capabilities"
+          }
+        },
+        {
+          "name": "Login - Account Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('accountAdminToken', response.data.token);",
+                  "        pm.collectionVariables.set('partnerAccountId', response.data.user.partnerAccountId);",
+                  "        console.log('✅ Account Admin token saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@testauto.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as Account Admin - manages partner account and users"
+          }
+        },
+        {
+          "name": "Login - Account Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('accountStaffToken', response.data.token);",
+                  "        console.log('✅ Account Staff token saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff@testauto.com\",\n  \"password\": \"staff123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as Account Staff - day-to-day administration"
+          }
+        },
+        {
+          "name": "Login - Account Installer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('accountInstallerToken', response.data.token);",
+                  "        console.log('✅ Account Installer token saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"installer@testauto.com\",\n  \"password\": \"installer123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as Account Installer - performs installations and verifies via SMS only"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📧 Automated Reminder System (NEW)",
+      "description": "Complete automated reminder system for annual inspections - GAP 1.1 RESOLVED",
+      "item": [
+        {
+          "name": "Get Pending Reminders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "pending"]
+            },
+            "description": "Get all reminders scheduled to be sent today (ERPS Admin only)"
+          }
+        },
+        {
+          "name": "Process Pending Reminders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "process"]
+            },
+            "description": "Manually trigger processing of all pending reminders"
+          }
+        },
+        {
+          "name": "Get Reminder Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "statistics"]
+            },
+            "description": "Get comprehensive reminder system statistics"
+          }
+        },
+        {
+          "name": "Schedule Warranty Reminders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/warranty/{{warrantyId}}/schedule",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "warranty", "{{warrantyId}}", "schedule"]
+            },
+            "description": "Schedule all reminder types for a specific warranty"
+          }
+        },
+        {
+          "name": "Cancel Warranty Reminders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/warranty/{{warrantyId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "warranty", "{{warrantyId}}", "cancel"]
+            },
+            "description": "Cancel all pending reminders for a warranty (when inspection completed)"
+          }
+        },
+        {
+          "name": "Send Test Reminder Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reminders/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "test"]
+            },
+            "description": "Send a test reminder email to verify email service functionality"
+          }
+        }
+      ]
+    },
+    {
+      "name": "⏰ Grace Period Enforcement (NEW)",
+      "description": "Automated grace period enforcement and warranty lifecycle management - GAP 1.2 RESOLVED",
+      "item": [
+        {
+          "name": "Process Grace Period Expiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/grace-period/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "grace-period", "process"]
+            },
+            "description": "Process warranties where grace period has expired (automated daily)"
+          }
+        },
+        {
+          "name": "Get System Health Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/warranties?status=grace_period",
+              "host": ["{{baseUrl}}"],
+              "path": ["warranties"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "grace_period"
+                }
+              ]
+            },
+            "description": "Get warranties currently in grace period"
+          }
+        },
+        {
+          "name": "Get Expired Warranties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/warranties?status=lapsed",
+              "host": ["{{baseUrl}}"],
+              "path": ["warranties"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "lapsed"
+                }
+              ]
+            },
+            "description": "Get warranties that have lapsed after grace period expiry"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 Warranty Reinstatement (NEW)",
+      "description": "ERPS Admin warranty reinstatement after lapse - GAP 1.3 RESOLVED",
+      "item": [
+        {
+          "name": "Get Lapsed Warranties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/lapsed-warranties",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "lapsed-warranties"]
+            },
+            "description": "Get all warranties that have lapsed and are eligible for reinstatement"
+          }
+        },
+        {
+          "name": "Check Reinstatement Eligibility",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/warranty/{{warrantyId}}/reinstatement-eligibility",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "warranty", "{{warrantyId}}", "reinstatement-eligibility"]
+            },
+            "description": "Check if a warranty is eligible for reinstatement"
+          }
+        },
+        {
+          "name": "Reinstate Warranty (Admin Discretion)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Customer completed late inspection - admin discretion\",\n  \"notes\": \"Customer had valid reason for delay\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reminders/warranty/{{warrantyId}}/reinstate",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "warranty", "{{warrantyId}}", "reinstate"]
+            },
+            "description": "Reinstate a lapsed warranty (ERPS Admin only)"
+          }
+        },
+        {
+          "name": "Reinstate Warranty (With Inspection)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Late inspection completed and verified\",\n  \"inspectionId\": \"{{inspectionId}}\",\n  \"notes\": \"Inspection completed after grace period - warranty reinstated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reminders/warranty/{{warrantyId}}/reinstate",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "warranty", "{{warrantyId}}", "reinstate"]
+            },
+            "description": "Reinstate warranty based on completed inspection"
+          }
+        },
+        {
+          "name": "Get Reinstatement History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/warranty/{{warrantyId}}/reinstatement-history",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "warranty", "{{warrantyId}}", "reinstatement-history"]
+            },
+            "description": "Get complete reinstatement history for a warranty"
+          }
+        },
+        {
+          "name": "Get Reinstatement Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/reinstatement-statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "reinstatement-statistics"]
+            },
+            "description": "Get comprehensive warranty reinstatement statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📸 Enhanced Photo Validation (NEW)",
+      "description": "Category-based photo validation and corrosion requirements - GAP 2.1 & 2.2 RESOLVED",
+      "item": [
+        {
+          "name": "Get Warranty Photo Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo-categories/WARRANTY",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo-categories", "WARRANTY"]
+            },
+            "description": "Get photo categories and requirements for warranty records"
+          }
+        },
+        {
+          "name": "Get Inspection Photo Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo-categories/INSPECTION",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo-categories", "INSPECTION"]
+            },
+            "description": "Get photo categories and requirements for inspection records"
+          }
+        },
+        {
+          "name": "Validate Warranty Photos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/warranty/{{warrantyId}}/photos",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "warranty", "{{warrantyId}}", "photos"]
+            },
+            "description": "Validate that all required photo categories are provided for warranty"
+          }
+        },
+        {
+          "name": "Validate Inspection Photos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/inspection/{{inspectionId}}/photos",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "inspection", "{{inspectionId}}", "photos"]
+            },
+            "description": "Validate that all required photo categories are provided for inspection"
+          }
+        },
+        {
+          "name": "Validate Corrosion Requirements (Warranty)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/corrosion/WARRANTY/{{warrantyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "corrosion", "WARRANTY", "{{warrantyId}}"]
+            },
+            "description": "Validate corrosion documentation requirements for warranty"
+          }
+        },
+        {
+          "name": "Validate Corrosion Requirements (Inspection)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/corrosion/INSPECTION/{{inspectionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "corrosion", "INSPECTION", "{{inspectionId}}"]
+            },
+            "description": "Validate corrosion documentation requirements for inspection"
+          }
+        },
+        {
+          "name": "Update Photo Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"GENERATOR_INSTALLATION\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo/WARRANTY/{{photoId}}/category",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo", "WARRANTY", "{{photoId}}", "category"]
+            },
+            "description": "Update the category classification for a photo"
+          }
+        },
+        {
+          "name": "Validate Photo Upload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"photoCount\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo-upload/WARRANTY/{{warrantyId}}/GENERATOR_INSTALLATION/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo-upload", "WARRANTY", "{{warrantyId}}", "GENERATOR_INSTALLATION", "validate"]
+            },
+            "description": "Validate if photo upload is allowed for category"
+          }
+        },
+        {
+          "name": "Admin: Approve Photo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\",\n  \"notes\": \"Photo meets category requirements\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo/WARRANTY/{{photoId}}/validation-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo", "WARRANTY", "{{photoId}}", "validation-status"]
+            },
+            "description": "Approve photo validation (ERPS Admin only)"
+          }
+        },
+        {
+          "name": "Admin: Reject Photo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"REJECTED\",\n  \"notes\": \"Photo does not clearly show required components\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo/WARRANTY/{{photoId}}/validation-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo", "WARRANTY", "{{photoId}}", "validation-status"]
+            },
+            "description": "Reject photo validation (ERPS Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Inspection Checklist Validation (NEW)",
+      "description": "Structured inspection checklist with item-by-item validation - GAP 2.3 RESOLVED",
+      "item": [
+        {
+          "name": "Get Checklist Template",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/checklist-template",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "checklist-template"]
+            },
+            "description": "Get standard inspection checklist template (17 items)"
+          }
+        },
+        {
+          "name": "Create Inspection Checklist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.length > 0) {",
+                  "        pm.collectionVariables.set('checklistItemId', response.data[0].id);",
+                  "        console.log('✅ Checklist item ID saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/inspection/{{inspectionId}}/checklist",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "inspection", "{{inspectionId}}", "checklist"]
+            },
+            "description": "Create standardized checklist for inspection"
+          }
+        },
+        {
+          "name": "Get Inspection Checklist",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/inspection/{{inspectionId}}/checklist",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "inspection", "{{inspectionId}}", "checklist"]
+            },
+            "description": "Get all checklist items for inspection"
+          }
+        },
+        {
+          "name": "Update Checklist Item - PASS",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conditionStatus\": \"PASS\",\n  \"notes\": \"Generator operating normally\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validation/checklist-item/{{checklistItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "checklist-item", "{{checklistItemId}}"]
+            },
+            "description": "Update checklist item with PASS status"
+          }
+        },
+        {
+          "name": "Update Checklist Item - ISSUE_OBSERVED",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conditionStatus\": \"ISSUE_OBSERVED\",\n  \"notes\": \"Minor corrosion observed on coupler - requires monitoring\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/validation/checklist-item/{{checklistItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "checklist-item", "{{checklistItemId}}"]
+            },
+            "description": "Update checklist item with ISSUE_OBSERVED status (notes required)"
+          }
+        },
+        {
+          "name": "Validate Inspection Checklist",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/inspection/{{inspectionId}}/checklist/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "inspection", "{{inspectionId}}", "checklist", "validate"]
+            },
+            "description": "Validate that inspection checklist is complete"
+          }
+        },
+        {
+          "name": "Admin: Get Incomplete Checklists",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/incomplete-checklists",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "incomplete-checklists"]
+            },
+            "description": "Get inspections with incomplete checklists (ERPS Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Submission History & Audit Trail (NEW)",
+      "description": "Complete audit trail and versioning system - GAP 2.4 RESOLVED",
+      "item": [
+        {
+          "name": "Get Warranty Submission History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/submission-history/WARRANTY/{{warrantyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "submission-history", "WARRANTY", "{{warrantyId}}"]
+            },
+            "description": "Get complete submission history for warranty"
+          }
+        },
+        {
+          "name": "Get Inspection Submission History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/submission-history/INSPECTION/{{inspectionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "submission-history", "INSPECTION", "{{inspectionId}}"]
+            },
+            "description": "Get complete submission history for inspection"
+          }
+        },
+        {
+          "name": "Get Specific Submission Version (Read-Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/submission-history/WARRANTY/{{warrantyId}}/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "submission-history", "WARRANTY", "{{warrantyId}}", "1"]
+            },
+            "description": "Get specific submission version (read-only historical data)"
+          }
+        },
+        {
+          "name": "Get Warranty Audit Trail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/audit-trail/WARRANTY/{{warrantyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "audit-trail", "WARRANTY", "{{warrantyId}}"]
+            },
+            "description": "Get complete audit trail for warranty"
+          }
+        },
+        {
+          "name": "Get Inspection Audit Trail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/audit-trail/INSPECTION/{{inspectionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "audit-trail", "INSPECTION", "{{inspectionId}}"]
+            },
+            "description": "Get complete audit trail for inspection"
+          }
+        },
+        {
+          "name": "Admin: Get Rejected Submissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/rejected-submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "rejected-submissions"]
+            },
+            "description": "Get all rejected submissions requiring attention (ERPS Admin only)"
+          }
+        },
+        {
+          "name": "Admin: Get Validation Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "summary"]
+            },
+            "description": "Get comprehensive validation system summary (ERPS Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Warranty Registration Workflow",
+      "description": "Complete warranty registration workflow with enhanced validation",
+      "item": [
+        {
+          "name": "Create Warranty Registration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('warrantyId', response.data.id);",
+                  "        console.log('✅ Warranty ID saved: ' + response.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"email\": \"john.smith@example.com\",\n  \"phone\": \"555-0123\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Toronto\",\n  \"province\": \"ON\",\n  \"postalCode\": \"M5V 3A8\",\n  \"make\": \"Ford\",\n  \"model\": \"F-150\",\n  \"year\": 2023,\n  \"vinNumber\": \"1FTFW1E50NFA12345\",\n  \"installationDate\": \"2024-01-15\",\n  \"installedBy\": \"installer@testauto.com\",\n  \"corrosionFound\": false,\n  \"notes\": \"Standard installation completed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/warranties",
+              "host": ["{{baseUrl}}"],
+              "path": ["warranties"]
+            },
+            "description": "Create new warranty registration (DRAFT status)"
+          }
+        },
+        {
+          "name": "Submit Warranty for Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/warranties/{{warrantyId}}/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["warranties", "{{warrantyId}}", "submit"]
+            },
+            "description": "Submit warranty for verification (triggers SMS to installer)"
+          }
+        },
+        {
+          "name": "Get Warranty Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/warranties/{{warrantyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["warranties", "{{warrantyId}}"]
+            },
+            "description": "Get warranty details and current status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Annual Inspection Workflow",
+      "description": "Complete annual inspection workflow with enhanced validation",
+      "item": [
+        {
+          "name": "Create Annual Inspection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('inspectionId', response.data.id);",
+                  "        console.log('✅ Inspection ID saved: ' + response.data.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warrantyId\": \"{{warrantyId}}\",\n  \"inspectionDate\": \"2024-12-24\",\n  \"inspectedBy\": \"installer@testauto.com\",\n  \"generatorCondition\": \"GOOD\",\n  \"redLightFunctional\": true,\n  \"couplersCondition\": \"GOOD\",\n  \"corrosionFound\": false,\n  \"notes\": \"Annual inspection completed - all systems operational\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/inspections",
+              "host": ["{{baseUrl}}"],
+              "path": ["inspections"]
+            },
+            "description": "Create new annual inspection (DRAFT status)"
+          }
+        },
+        {
+          "name": "Submit Inspection for Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inspections/{{inspectionId}}/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["inspections", "{{inspectionId}}", "submit"]
+            },
+            "description": "Submit inspection for verification (triggers SMS to inspector)"
+          }
+        },
+        {
+          "name": "Get Inspection Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/inspections/{{inspectionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["inspections", "{{inspectionId}}"]
+            },
+            "description": "Get inspection details and current status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📱 SMS Verification Workflow",
+      "description": "SMS-only verification process (installer/inspector verification)",
+      "item": [
+        {
+          "name": "Get Verification Details (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This simulates clicking an SMS link",
+                  "// In real scenario, token comes from SMS",
+                  "pm.collectionVariables.set('verificationToken', 'sample-token-from-sms');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/verify/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "{{verificationToken}}"]
+            },
+            "description": "Get verification details from SMS token (public endpoint)"
+          }
+        },
+        {
+          "name": "Confirm Warranty Verification (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"CONFIRM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verify/warranty/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "warranty", "{{verificationToken}}"]
+            },
+            "description": "Confirm warranty verification via SMS (installer confirms work)"
+          }
+        },
+        {
+          "name": "Decline Warranty Verification (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"DECLINE\",\n  \"declineReason\": \"I did not perform this installation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verify/warranty/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "warranty", "{{verificationToken}}"]
+            },
+            "description": "Decline warranty verification via SMS (installer declines)"
+          }
+        },
+        {
+          "name": "Confirm Inspection Verification (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"CONFIRM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verify/inspection/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "inspection", "{{verificationToken}}"]
+            },
+            "description": "Confirm inspection verification via SMS (inspector confirms work)"
+          }
+        },
+        {
+          "name": "Decline Inspection Verification (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"DECLINE\",\n  \"declineReason\": \"I did not perform this inspection\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verify/inspection/{{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "inspection", "{{verificationToken}}"]
+            },
+            "description": "Decline inspection verification via SMS (inspector declines)"
+          }
+        },
+        {
+          "name": "Admin: Resend Verification SMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recordId\": \"{{warrantyId}}\",\n  \"recordType\": \"WARRANTY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/verify/resend",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "resend"]
+            },
+            "description": "Resend verification SMS (ERPS Admin only)"
+          }
+        },
+        {
+          "name": "Admin: Get Installer Verification History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/verify/history/installer-user-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify", "history", "installer-user-id"]
+            },
+            "description": "Get complete verification history for installer (ERPS Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Complete Workflow Scenarios (SQA Testing)",
+      "description": "End-to-end workflow scenarios demonstrating all gap resolutions",
+      "item": [
+        {
+          "name": "Scenario 1: Complete Warranty Lifecycle",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/warranties?status=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["warranties"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "all"
+                }
+              ]
+            },
+            "description": "SCENARIO: Create → Submit → Verify → Schedule Reminders → Complete Inspection → Extend Warranty"
+          }
+        },
+        {
+          "name": "Scenario 2: Grace Period Expiry & Reinstatement",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/lapsed-warranties",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "lapsed-warranties"]
+            },
+            "description": "SCENARIO: Miss Inspection → Grace Period → Lapse → Admin Reinstatement"
+          }
+        },
+        {
+          "name": "Scenario 3: Photo Category Validation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/photo-categories/WARRANTY",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "photo-categories", "WARRANTY"]
+            },
+            "description": "SCENARIO: Upload Photos → Categorize → Validate Requirements → Admin Approval"
+          }
+        },
+        {
+          "name": "Scenario 4: Corrosion Documentation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/corrosion/INSPECTION/{{inspectionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "corrosion", "INSPECTION", "{{inspectionId}}"]
+            },
+            "description": "SCENARIO: Find Corrosion → Mandatory Notes → Required Photos → Validation"
+          }
+        },
+        {
+          "name": "Scenario 5: Inspection Checklist Completion",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accountAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/checklist-template",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "checklist-template"]
+            },
+            "description": "SCENARIO: Create Checklist → Complete Items → Issue Observed → Required Notes → Validation"
+          }
+        },
+        {
+          "name": "Scenario 6: Rejection & Audit Trail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/rejected-submissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "rejected-submissions"]
+            },
+            "description": "SCENARIO: Submit → Reject → Unlock → Resubmit → Maintain History"
+          }
+        },
+        {
+          "name": "Scenario 7: Automated Reminder System",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "statistics"]
+            },
+            "description": "SCENARIO: 11-Month Reminder → 30-Day Warning → Due Date Notice → Grace Period → Expiry"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Admin Dashboard & Monitoring",
+      "description": "ERPS Admin dashboard and system monitoring endpoints",
+      "item": [
+        {
+          "name": "System Health Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/system-health",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "system-health"]
+            },
+            "description": "Get comprehensive system health overview"
+          }
+        },
+        {
+          "name": "Reminder System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "statistics"]
+            },
+            "description": "Get reminder system performance statistics"
+          }
+        },
+        {
+          "name": "Validation System Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/validation/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["validation", "summary"]
+            },
+            "description": "Get validation system comprehensive summary"
+          }
+        },
+        {
+          "name": "Reinstatement Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/reinstatement-statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "reinstatement-statistics"]
+            },
+            "description": "Get warranty reinstatement statistics"
+          }
+        },
+        {
+          "name": "Partner Account Management",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/partner-accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "partner-accounts"]
+            },
+            "description": "Get all partner accounts for admin oversight"
+          }
+        },
+        {
+          "name": "User Management Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"]
+            },
+            "description": "Get all users across all partner accounts"
+          }
+        }
+      ]
+    }
+  ]
+}

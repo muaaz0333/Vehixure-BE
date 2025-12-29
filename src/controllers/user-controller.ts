@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { User } from '../entities/User.js';
 import Response from '../Traits/ApiResponser.js';
+import { EmailService } from '../services/email-service.js';
 
 export const getUsers = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
@@ -32,9 +33,44 @@ export const getUserById = async (req: FastifyRequest<{ Params: { id: string } }
 export const createUser = async (req: FastifyRequest, reply: FastifyReply) => {
   try {
     const repo = req.server.db.getRepository(User);
-    const user = repo.create(req.body as any);
-    await repo.save(user);
-    return Response.successResponse(reply, user, 201);
+    const userData = req.body as any;
+    
+    const user = repo.create(userData);
+    const savedUser = await repo.save(user);
+    
+    // repo.save() returns the saved entity directly when saving a single entity
+    const userEntity = Array.isArray(savedUser) ? savedUser[0] : savedUser;
+    
+    // Send welcome email for AGENT and INSPECTOR roles
+    if (userEntity.role === 'AGENT' || userEntity.role === 'INSPECTOR') {
+      try {
+        await EmailService.sendUserCreationEmail({
+          fullName: userEntity.fullName || userEntity.email,
+          email: userEntity.email,
+          password: userData.password, // Send the plain password in email (before hashing)
+          role: userEntity.role,
+          businessName: userEntity.businessName
+        });
+      } catch (emailError: any) {
+        console.error('❌ Failed to send welcome email:', emailError.message);
+        // Don't fail the user creation if email fails
+      }
+    } else {
+      // Send generic email for other roles
+      try {
+        await EmailService.sendGenericUserCreationEmail({
+          fullName: userEntity.fullName || userEntity.email,
+          email: userEntity.email,
+          password: userData.password,
+          role: userEntity.role
+        });
+      } catch (emailError: any) {
+        console.error('❌ Failed to send welcome email:', emailError.message);
+        // Don't fail the user creation if email fails
+      }
+    }
+    
+    return Response.successResponse(reply, userEntity, 201);
   } catch (err: any) {
     console.error('❌ createUser error:', err);
     return Response.errorResponse(reply, err.message || 'Something went wrong');
@@ -57,7 +93,7 @@ export const updateUser = async (req: FastifyRequest<{ Params: { id: string } }>
     if (!targetUser) return Response.errorResponse(reply, 'User not found', 404);
 
     const requestingUser = await repo.findOneBy({ id: userId });
-    const isAdmin = requestingUser?.role === 'SUPER_ADMIN';
+    const isAdmin = requestingUser?.role === 'ADMIN';
     if (userId !== id && !isAdmin) {
       return Response.errorResponse(reply, 'Forbidden', 403);
     }
@@ -70,7 +106,7 @@ export const updateUser = async (req: FastifyRequest<{ Params: { id: string } }>
     delete payload.password;
     delete payload.id;
 
-    if (payload.role && requestingUser?.role !== 'SUPER_ADMIN') {
+    if (payload.role && requestingUser?.role !== 'ADMIN') {
       return Response.errorResponse(reply, 'Forbidden: cannot change role', 403);
     }
 

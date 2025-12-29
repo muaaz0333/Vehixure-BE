@@ -8,6 +8,8 @@ import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import cors from '@fastify/cors';
 import authMiddleware from './plugins/auth-middleware.js';
+import { SystemConfigService } from './services/system-config-service.js';
+import { CronJobService } from './services/cron-job-service.js';
 
 const server = fastify({
   ajv: {
@@ -37,8 +39,8 @@ await server.register(authMiddleware);
 await server.register(swagger, {
   openapi: {
     info: {
-      title: 'papero API',
-      description: 'API documentation for papero',
+      title: 'ERPS API',
+      description: 'API documentation for ERPS',
       version: '1.0.0',
     },
     components: {
@@ -54,6 +56,48 @@ await server.register(swagger, {
 });
 await server.register(swaggerUI, { routePrefix: '/docs' });
 await server.register(routes);
+
+// Initialize system configuration after database connection
+server.addHook('onReady', async () => {
+  try {
+    // Initialize ERPS system configuration
+    const systemConfigService = new SystemConfigService();
+    await systemConfigService.initializeERPSDefaults();
+    server.log.info('✅ ERPS system configuration initialized');
+
+    // Check if auto-start cron jobs is enabled
+    const autoStartCronJobs = await systemConfigService.getConfigValue('CRON_JOBS', 'AUTO_START_CRON_JOBS');
+    
+    if (autoStartCronJobs !== false) { // Default to true if not set
+      // Start ERPS cron jobs automatically
+      const cronJobService = new CronJobService();
+      await cronJobService.startAllCronJobs();
+      server.log.info('✅ ERPS cron jobs started automatically');
+      
+      // Store cron job service instance for graceful shutdown
+      server.decorate('cronJobService', cronJobService);
+    } else {
+      server.log.info('⏸️ ERPS cron jobs auto-start disabled');
+    }
+    
+  } catch (error) {
+    server.log.error('❌ Failed to initialize ERPS system:', error);
+    // Don't throw error to prevent server startup failure
+  }
+});
+
+// Graceful shutdown - stop cron jobs
+server.addHook('onClose', async () => {
+  try {
+    if (server.cronJobService) {
+      server.cronJobService.stopAllCronJobs();
+      server.log.info('✅ ERPS cron jobs stopped gracefully');
+    }
+  } catch (error) {
+    server.log.error('❌ Error stopping cron jobs during shutdown:', error);
+  }
+});
+
 await server.ready();
 
 export default server;

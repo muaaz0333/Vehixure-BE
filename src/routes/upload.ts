@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify';
-import { authenticateSuperOrStoreAdmin } from '../plugins/auth-middleware.js';
 import { imageUpload } from '../controllers/upload-controller.js';
 import {
     ErrorResponse,

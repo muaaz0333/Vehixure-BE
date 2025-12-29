@@ -1,5 +1,6 @@
 import cloudinary from 'cloudinary';
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { Readable } from 'stream';
 import Response from '../Traits/ApiResponser.js';
 
 
@@ -30,7 +31,7 @@ export const imageUpload = async (request: FastifyRequest, reply: FastifyReply) 
       }
     );
 
-    stream.Readable.from(file.file).pipe(uploadStream);
+    Readable.from(file.file).pipe(uploadStream);
   });
 
   // return { imageUrl: result };

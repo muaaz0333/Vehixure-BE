@@ -8,28 +8,39 @@ export interface User {
   fullName?: string;
   dob?: Date;
   isVerified: boolean;
-  role: 'USER' | 'STORE_ADMIN' | 'SUPER_ADMIN' | 'INFLUENCER';
+  role: 'ERPS_ADMIN' | 'PARTNER_USER';
   isBlocked: boolean;
   blockedAt?: Date | null;
   blockedReason?: string | null;
-  imageUrl?: string;
-  coverImageUrl?: string;
   phone?: string;
-  gender?: string;
-  bio?: string;
   isDeleted: boolean;
-  googleAccessToken?: string | null;
-  deviceId?: string | null;
   isAllowedNotification: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   languagePreference: string;
-  influencerStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
-  influencerTier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
-  influencerVerifiedAt?: Date | null;
   created: Date;
   modified: Date;
   deletedAt?: Date | null;
+  
+  // Partner System Fields (Required for PARTNER_USER role)
+  partnerAccountId?: string;
+  partnerRole?: 'ACCOUNT_ADMIN' | 'ACCOUNT_STAFF' | 'ACCOUNT_INSTALLER';
+  
+  // Enhanced installer/inspector fields (Required for ACCOUNT_INSTALLER role)
+  mobileNumber?: string; // Required for SMS verification
+  isAccreditedInstaller: boolean;
+  isAuthorisedInspector: boolean;
+  installerCertificationDate?: Date;
+  inspectorCertificationDate?: Date;
+  installerCertificationNumber?: string;
+  inspectorCertificationNumber?: string;
+  
+  // Verification tracking
+  lastVerificationSent?: Date;
+  verificationAttempts: number;
+  
+  // Account status
+  accountStatus?: 'Active' | 'InActive';
 }
 
 export const User = new EntitySchema<User>({
@@ -54,14 +65,6 @@ export const User = new EntitySchema<User>({
       type: 'text',
       nullable: true,
     },
-    gender: {
-      type: 'text',
-      nullable: true,
-    },
-    bio: {
-      type: 'text',
-      nullable: true,
-    },
     dob: {
       type: 'timestamp',
       nullable: true,
@@ -72,22 +75,8 @@ export const User = new EntitySchema<User>({
     },
     role: {
       type: 'enum',
-      enum: ['USER', 'STORE_ADMIN', 'SUPER_ADMIN', 'INFLUENCER'],
-      default: 'USER',
-    },
-    influencerStatus: {
-      type: 'enum',
-      enum: ['PENDING', 'VERIFIED', 'REJECTED'],
-      default: 'PENDING',
-    },
-    influencerTier: {
-      type: 'enum',
-      enum: ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM'],
-      default: 'BRONZE',
-    },
-    influencerVerifiedAt: {
-      type: 'timestamp',
-      nullable: true,
+      enum: ['ERPS_ADMIN', 'PARTNER_USER'],
+      default: 'PARTNER_USER',
     },
     isBlocked: {
       type: 'boolean',
@@ -101,31 +90,13 @@ export const User = new EntitySchema<User>({
       type: 'text',
       nullable: true,
     },
-    imageUrl: {
-      type: 'text',
-      nullable: true,
-    },
-    coverImageUrl: {
-      type: 'text',
-      nullable: true,
-    },
     phone: {
       type: 'text',
-      unique: true,
       nullable: true,
     },
     isDeleted: {
       type: 'boolean',
       default: false,
-    },
-    googleAccessToken: {
-      type: 'text',
-      nullable: true,
-    },
-    deviceId: {
-      type: 'text',
-      unique: true,
-      nullable: true,
     },
     isAllowedNotification: {
       type: 'boolean',
@@ -143,6 +114,67 @@ export const User = new EntitySchema<User>({
       type: 'text',
       default: 'en',
     },
+    
+    // Partner System Fields
+    partnerAccountId: {
+      type: 'uuid',
+      nullable: true,
+    },
+    partnerRole: {
+      type: 'enum',
+      enum: ['ACCOUNT_ADMIN', 'ACCOUNT_STAFF', 'ACCOUNT_INSTALLER'],
+      nullable: true,
+    },
+    
+    // Enhanced installer/inspector fields (Required for ACCOUNT_INSTALLER role)
+    mobileNumber: {
+      type: 'text',
+      nullable: true,
+    },
+    isAccreditedInstaller: {
+      type: 'boolean',
+      default: true,
+    },
+    isAuthorisedInspector: {
+      type: 'boolean',
+      default: false,
+    },
+    installerCertificationDate: {
+      type: 'date',
+      nullable: true,
+    },
+    inspectorCertificationDate: {
+      type: 'date',
+      nullable: true,
+    },
+    installerCertificationNumber: {
+      type: 'varchar',
+      length: 100,
+      nullable: true,
+    },
+    inspectorCertificationNumber: {
+      type: 'varchar',
+      length: 100,
+      nullable: true,
+    },
+    
+    // Verification tracking
+    lastVerificationSent: {
+      type: 'timestamp',
+      nullable: true,
+    },
+    verificationAttempts: {
+      type: 'int',
+      default: 0,
+    },
+    
+    // Account status
+    accountStatus: {
+      type: 'enum',
+      enum: ['Active', 'InActive'],
+      default: 'Active',
+    },
+    
     ...BaseEntity,
   },
 });

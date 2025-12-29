@@ -1,0 +1,514 @@
+// ERPS Partner Portal - Database ERD
+// Generated for dbdiagram.io
+// Last Updated: December 29, 2024
+
+// ============================================
+// ENUMS
+// ============================================
+
+Enum user_role {
+  ERPS_ADMIN
+  PARTNER_USER
+}
+
+Enum partner_role {
+  ACCOUNT_ADMIN
+  ACCOUNT_STAFF
+  ACCOUNT_INSTALLER
+}
+
+Enum account_status {
+  Active
+  InActive
+  Suspended
+}
+
+Enum warranty_status {
+  DRAFT
+  SUBMITTED
+  PENDING_CUSTOMER_ACTIVATION
+  VERIFIED
+  REJECTED
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+Enum verification_status {
+  DRAFT
+  SUBMITTED
+  PENDING_CUSTOMER_ACTIVATION
+  VERIFIED
+  REJECTED
+  ACTIVE
+}
+
+Enum inspection_status {
+  DRAFT
+  SUBMITTED
+  VERIFIED
+  REJECTED
+}
+
+Enum condition_status {
+  PASS
+  ISSUE
+}
+
+Enum buy_price {
+  Aftermart
+  Distributor
+  E1
+  E2
+  "Less 15%"
+  Rob
+  EquipIT
+  Installer
+  Inspector
+}
+
+Enum warranty_add_type {
+  ADD_WARRANTY
+  REPLACE_WARRANTY
+}
+
+// ============================================
+// TABLES
+// ============================================
+
+Table partner_accounts {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  business_name varchar(255) [not null]
+  contact_person varchar(255) [not null]
+  
+  // Address
+  street_address text
+  city varchar(100)
+  state varchar(100)
+  postcode varchar(20)
+  country varchar(100) [default: 'Australia']
+  
+  // Contact
+  phone varchar(50)
+  fax_number varchar(50)
+  email varchar(255)
+  
+  // Business
+  products_sold text
+  buy_price buy_price
+  
+  // Status
+  account_status account_status [default: 'Active']
+  
+  // Audit
+  is_deleted boolean [default: false]
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    (account_status) [name: 'idx_partner_accounts_status']
+    (business_name) [name: 'idx_partner_accounts_business_name']
+  }
+}
+
+Table users {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  email text [unique, not null]
+  password text
+  full_name text
+  dob timestamp
+  
+  // Role & Status
+  role user_role [default: 'PARTNER_USER']
+  is_verified boolean [default: false]
+  is_blocked boolean [default: false]
+  blocked_at timestamp
+  blocked_reason text
+  
+  // Contact
+  phone text
+  mobile_number text
+  
+  // Partner System
+  partner_account_id uuid [ref: > partner_accounts.id]
+  partner_role partner_role
+  
+  // Installer/Inspector Credentials
+  is_accredited_installer boolean [default: true]
+  is_authorised_inspector boolean [default: false]
+  installer_certification_date date
+  inspector_certification_date date
+  installer_certification_number varchar(100)
+  inspector_certification_number varchar(100)
+  
+  // Verification Tracking
+  last_verification_sent timestamp
+  verification_attempts int [default: 0]
+  
+  // Account Status
+  account_status account_status [default: 'Active']
+  
+  // Preferences
+  is_allowed_notification boolean [default: true]
+  is_email_verified boolean [default: false]
+  is_phone_verified boolean [default: false]
+  language_preference text [default: 'en']
+  
+  // Audit
+  is_deleted boolean [default: false]
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    (email) [unique, name: 'idx_users_email']
+    (partner_account_id) [name: 'idx_users_partner_account']
+    (partner_role) [name: 'idx_users_partner_role']
+  }
+}
+
+Table warranty_terms {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  warranty_name text [not null]
+  description text
+  revision text [not null]
+  generator_light_colour text
+  terms_and_conditions text
+  add_type warranty_add_type [not null]
+  warranty_to_replace_id uuid [ref: > warranty_terms.id]
+  inspection_instructions text
+  
+  // Status
+  is_active boolean [default: true]
+  is_deleted boolean [default: false]
+  
+  // Audit
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+  deleted_at timestamp
+}
+
+Table warranties {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  ref_stock_id text
+  
+  // References
+  agent_id uuid [not null, ref: > users.id]
+  warranty_terms_id uuid [not null, ref: > warranty_terms.id]
+  partner_account_id uuid [ref: > partner_accounts.id]
+  installer_id uuid [ref: > users.id]
+  
+  // Vehicle Owner Details
+  company_name text
+  first_name text [not null]
+  last_name text [not null]
+  phone_number text [not null]
+  email text [not null]
+  
+  // Vehicle Details
+  make text [not null]
+  model text [not null]
+  registration_number text
+  build_date date [not null]
+  vin_number text [not null]
+  
+  // Installation Details
+  installers_name text [not null]
+  date_installed date [not null]
+  generator_serial_number text [not null]
+  number_of_couplers_installed int
+  voltage_in_coupler_supply_line decimal(10,2)
+  position_of_couplers text
+  
+  // Corrosion
+  corrosion_found boolean [default: false]
+  corrosion_details text
+  installation_confirmed boolean [default: false]
+  
+  // Verification Workflow
+  verification_status verification_status [default: 'DRAFT']
+  verification_token text
+  verification_token_expires timestamp
+  verified_by uuid [ref: > users.id]
+  verified_at timestamp
+  rejection_reason text
+  submission_notes text
+  
+  // Customer Activation (NEW)
+  customer_activation_token text
+  customer_activation_token_expires timestamp
+  customer_terms_accepted_at timestamp
+  customer_terms_accepted_ip text
+  activated_at timestamp
+  activated_by uuid [ref: > users.id]
+  inspection_due_date date
+  is_active boolean [default: false]
+  
+  // Rejection Tracking
+  rejection_detail varchar(50)
+  rejected_by_user_id uuid [ref: > users.id]
+  rejection_timestamp timestamp
+  
+  // Submission Tracking
+  submitted_by uuid [ref: > users.id]
+  submitted_at timestamp
+  
+  // Warranty Continuity
+  next_inspection_due date
+  grace_period_end date
+  reminder_sent_at timestamp
+  is_in_grace_period boolean [default: false]
+  grace_period_end_date date
+  is_grace_expired boolean [default: false]
+  extension_blocked_at timestamp
+  
+  // Reminder Tracking
+  eleven_month_reminder_sent timestamp
+  thirty_day_reminder_sent timestamp
+  reminder_attempts int [default: 0]
+  
+  // Status
+  status warranty_status [default: 'DRAFT']
+  is_deleted boolean [default: false]
+  
+  // Audit
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    (agent_id) [name: 'idx_warranties_agent']
+    (partner_account_id) [name: 'idx_warranties_partner']
+    (installer_id) [name: 'idx_warranties_installer']
+    (verification_status) [name: 'idx_warranties_verification_status']
+    (status) [name: 'idx_warranties_status']
+    (vin_number) [name: 'idx_warranties_vin']
+    (customer_activation_token) [name: 'idx_warranties_activation_token']
+    (is_active) [name: 'idx_warranties_is_active']
+  }
+}
+
+Table annual_inspections {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  
+  // References
+  warranty_id uuid [not null, ref: > warranties.id]
+  partner_account_id uuid [ref: > partner_accounts.id]
+  inspector_id uuid [not null, ref: > users.id]
+  
+  // Inspection Details
+  inspection_date date [not null]
+  
+  // Checklist - Basic
+  generator_mounted_correctly boolean [default: false]
+  red_light_illuminated boolean [default: false]
+  couplers_secure_sealed boolean [default: false]
+  
+  // Checklist - Corrosion Areas
+  roof_turret_condition condition_status [default: 'PASS']
+  roof_turret_notes text
+  pillars_condition condition_status [default: 'PASS']
+  pillars_notes text
+  sills_condition condition_status [default: 'PASS']
+  sills_notes text
+  guards_lf_condition condition_status [default: 'PASS']
+  guards_lf_notes text
+  guards_rf_condition condition_status [default: 'PASS']
+  guards_rf_notes text
+  guards_lr_condition condition_status [default: 'PASS']
+  guards_lr_notes text
+  guards_rr_condition condition_status [default: 'PASS']
+  guards_rr_notes text
+  inner_guards_condition condition_status [default: 'PASS']
+  inner_guards_notes text
+  under_bonnet_condition condition_status [default: 'PASS']
+  under_bonnet_notes text
+  firewall_condition condition_status [default: 'PASS']
+  firewall_notes text
+  boot_water_ingress_condition condition_status [default: 'PASS']
+  boot_water_ingress_notes text
+  underbody_seams_condition condition_status [default: 'PASS']
+  underbody_seams_notes text
+  
+  // Additional Checks
+  owner_advised_paint_damage boolean [default: false]
+  owner_understands_operation boolean [default: false]
+  
+  // Corrosion Declaration
+  corrosion_found boolean [default: false]
+  corrosion_details text
+  
+  // Verification Workflow
+  verification_status inspection_status [default: 'DRAFT']
+  verification_token text
+  verification_token_expires timestamp
+  verified_by uuid [ref: > users.id]
+  verified_at timestamp
+  rejection_reason text
+  
+  // Rejection Tracking
+  rejection_detail varchar(50)
+  rejected_by_user_id uuid [ref: > users.id]
+  rejection_timestamp timestamp
+  
+  // Submission Tracking
+  submitted_by uuid [ref: > users.id]
+  submitted_at timestamp
+  
+  // Due Date Tracking
+  due_date date
+  grace_period_end date
+  is_overdue boolean [default: false]
+  
+  // Warranty Extension
+  warranty_extended_until date
+  
+  // Audit
+  is_deleted boolean [default: false]
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    (warranty_id) [name: 'idx_inspections_warranty']
+    (partner_account_id) [name: 'idx_inspections_partner']
+    (inspector_id) [name: 'idx_inspections_inspector']
+    (verification_status) [name: 'idx_inspections_verification_status']
+    (due_date) [name: 'idx_inspections_due_date']
+  }
+}
+
+Table photos {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  
+  // References (one must be null)
+  warranty_id uuid [ref: > warranties.id]
+  inspection_id uuid [ref: > annual_inspections.id]
+  
+  // Photo Details
+  photo_category varchar(100) [not null, note: 'GENERATOR, COUPLER, CORROSION_OR_CLEAR, GENERATOR_RED_LIGHT, COUPLERS']
+  photo_url text [not null]
+  file_name varchar(255)
+  file_size int
+  mime_type varchar(100)
+  description text
+  
+  // Upload Tracking
+  uploaded_by uuid [ref: > users.id]
+  uploaded_at timestamp [default: `now()`]
+  
+  // Audit
+  is_deleted boolean [default: false]
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+  deleted_at timestamp
+
+  indexes {
+    (warranty_id) [name: 'idx_photos_warranty']
+    (inspection_id) [name: 'idx_photos_inspection']
+    (photo_category) [name: 'idx_photos_category']
+  }
+}
+
+Table audit_history {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  
+  // References (one must be null for warranty/inspection)
+  warranty_id uuid [ref: > warranties.id]
+  inspection_id uuid [ref: > annual_inspections.id]
+  
+  // Audit Details
+  action_type varchar(50) [not null, note: 'SUBMIT, VERIFY, REJECT, REINSTATE, REMINDER_SENT, ADMIN_OVERRIDE_VERIFY, ADMIN_OVERRIDE_ACTIVATE, CUSTOMER_TERMS_ACCEPTED']
+  record_type varchar(20) [not null, note: 'WARRANTY, INSPECTION, USER']
+  version_number int [default: 1]
+  
+  // Status Tracking
+  status_before varchar(50)
+  status_after varchar(50)
+  
+  // User Tracking
+  performed_by uuid [not null, ref: > users.id]
+  performed_at timestamp [default: `now()`]
+  
+  // Details
+  reason text
+  notes text
+  submission_data jsonb
+  
+  // SMS Tracking
+  sms_sent_to varchar(50)
+  sms_sent_at timestamp
+  sms_delivery_status varchar(20)
+  verification_token varchar(255)
+  token_expires_at timestamp
+  
+  // Metadata
+  ip_address inet
+  user_agent text
+  is_current_version boolean [default: false]
+  
+  // Audit
+  created timestamp [default: `now()`]
+
+  indexes {
+    (warranty_id) [name: 'idx_audit_warranty']
+    (inspection_id) [name: 'idx_audit_inspection']
+    (action_type) [name: 'idx_audit_action']
+    (performed_by) [name: 'idx_audit_performed_by']
+    (is_current_version) [name: 'idx_audit_current']
+  }
+}
+
+Table system_config {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  
+  // Configuration Identification
+  config_category varchar(50) [not null, note: 'REMINDER, PHOTO_VALIDATION, CORROSION_RULES, CHECKLIST_RULES, GRACE_PERIOD']
+  config_key varchar(100) [not null]
+  config_name varchar(200) [not null]
+  
+  // Configuration Values
+  string_value varchar(500)
+  integer_value int
+  boolean_value boolean
+  date_value date
+  json_value jsonb
+  
+  // Metadata
+  description text
+  is_active boolean [default: true]
+  is_mandatory boolean [default: false]
+  priority_order int [default: 0]
+  
+  // Audit
+  created timestamp [default: `now()`]
+  modified timestamp [default: `now()`]
+
+  indexes {
+    (config_category) [name: 'idx_config_category']
+    (config_key) [name: 'idx_config_key']
+    (config_category, config_key) [unique, name: 'uq_config_category_key']
+  }
+}
+
+// ============================================
+// TABLE GROUPS (for visual organization)
+// ============================================
+
+TableGroup core_entities {
+  partner_accounts
+  users
+}
+
+TableGroup warranty_system {
+  warranty_terms
+  warranties
+  annual_inspections
+  photos
+}
+
+TableGroup system_tables {
+  audit_history
+  system_config
+}

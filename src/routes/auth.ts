@@ -9,6 +9,10 @@ import {
   resetPasswordWithCode,
   changePassword,
   resendPasswordOtp,
+  getPartnerUsers,
+  getInstallers,
+  adminLoginAs,
+  getCurrentUser,
 } from '../controllers/auth-controller.js';
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
@@ -66,6 +70,10 @@ const ChangePasswordBody = Type.Object({
   newPassword: Type.String({ minLength: 6, description: 'New password (minimum 6 characters)' }),
 });
 
+const AdminLoginAsBody = Type.Object({
+  targetUserId: Type.String({ description: 'ID of the agent or inspector to login as' }),
+});
+
 // ✅ Firebase Sign-in request body
 const FirebaseSignInBody = Type.Object({
   googleToken: Type.String({
@@ -85,9 +93,62 @@ const UserData = Type.Object(
   { additionalProperties: true }
 );
 
+const UserListData = Type.Array(Type.Object(
+  {
+    id: Type.String(),
+    email: Type.String({ format: 'email' }),
+    username: Type.Optional(Type.String()),
+    fullName: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
+    businessName: Type.Optional(Type.String()),
+    contact: Type.Optional(Type.String()),
+    streetAddress: Type.Optional(Type.String()),
+    city: Type.Optional(Type.String()),
+    state: Type.Optional(Type.String()),
+    postcode: Type.Optional(Type.String()),
+    agentType: Type.Optional(Type.String()),
+    buyPrice: Type.Optional(Type.String()),
+    accountStatus: Type.Optional(Type.String()),
+    isVerified: Type.Boolean(),
+    isBlocked: Type.Boolean(),
+    created: Type.String(),
+  },
+  { additionalProperties: true }
+));
+
 const TokenData = Type.Object({
   token: Type.String(),
 });
+
+// Current user response schema (for /me endpoint)
+const CurrentUserResponseData = Type.Object({
+  user: Type.Object({
+    id: Type.String(),
+    email: Type.String({ format: 'email' }),
+    fullName: Type.Optional(Type.String()),
+    dob: Type.Optional(Type.String()),
+    phone: Type.Optional(Type.String()),
+    mobileNumber: Type.Optional(Type.String()),
+    role: Type.String(),
+    partnerRole: Type.Optional(Type.String()),
+    partnerAccountId: Type.Optional(Type.String()),
+    isVerified: Type.Boolean(),
+    isEmailVerified: Type.Boolean(),
+    isPhoneVerified: Type.Boolean(),
+    isBlocked: Type.Boolean(),
+    accountStatus: Type.Optional(Type.String()),
+    isAccreditedInstaller: Type.Boolean(),
+    isAuthorisedInspector: Type.Boolean(),
+    installerCertificationNumber: Type.Optional(Type.String()),
+    inspectorCertificationNumber: Type.Optional(Type.String()),
+    installerCertificationDate: Type.Optional(Type.String()),
+    inspectorCertificationDate: Type.Optional(Type.String()),
+    languagePreference: Type.String(),
+    isAllowedNotification: Type.Boolean(),
+    created: Type.String(),
+    modified: Type.String(),
+  })
+}, { additionalProperties: true });
 
 // 🔹 Routes
 export default async function authRoutes(fastify: FastifyInstance) {
@@ -213,6 +274,26 @@ export default async function authRoutes(fastify: FastifyInstance) {
     login
   );
 
+  fastify.get(
+    '/me',
+    {
+      onRequest: [fastify.authenticate],
+      schema: {
+        response: {
+          200: SuccessResponse(CurrentUserResponseData),
+          401: ErrorResponse,
+          403: ErrorResponse,
+          404: ErrorResponse,
+        },
+        tags: ['Auth'],
+        summary: 'Get current authenticated user',
+        description: 'Retrieve the current authenticated user\'s profile information',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    getCurrentUser
+  );
+
   fastify.post(
     '/forget-password',
     {
@@ -267,6 +348,64 @@ export default async function authRoutes(fastify: FastifyInstance) {
       },
     },
     changePassword
+  );
+
+  // 👑 ERPS Admin-only routes
+  fastify.get(
+    '/admin/partner-users',
+    {
+      onRequest: [fastify.authenticateAdmin],
+      schema: {
+        response: {
+          200: SuccessResponse(UserListData),
+          403: ErrorResponse,
+        },
+        tags: ['Admin'],
+        summary: 'Get all partner users (ERPS Admin only)',
+        description: 'Retrieve a list of all partner users in the system. Only accessible by ERPS Admin.',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    getPartnerUsers
+  );
+
+  fastify.get(
+    '/admin/installers',
+    {
+      onRequest: [fastify.authenticateAdmin],
+      schema: {
+        response: {
+          200: SuccessResponse(UserListData),
+          403: ErrorResponse,
+        },
+        tags: ['Admin'],
+        summary: 'Get all installers (ERPS Admin only)',
+        description: 'Retrieve a list of all installers in the system. Only accessible by ERPS Admin.',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    getInstallers
+  );
+
+  fastify.post(
+    '/admin/login-as',
+    {
+      onRequest: [fastify.authenticateAdmin],
+      schema: {
+        body: AdminLoginAsBody,
+        response: {
+          200: SuccessResponse(UserData),
+          400: ErrorResponse,
+          403: ErrorResponse,
+          404: ErrorResponse,
+        },
+        tags: ['Admin'],
+        summary: 'Admin login as agent or inspector',
+        description: 'Allows ERPS Admin to login as any partner user. Returns a token for the target user.',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    adminLoginAs
   );
 
 }

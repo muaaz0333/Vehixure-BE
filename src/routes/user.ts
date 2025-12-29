@@ -57,7 +57,7 @@ const FollowerResponse = Type.Object({
 
 export default async function userRoutes(fastify: FastifyInstance) {
   fastify.get('/', {
-    onRequest: [fastify.authenticateSuperAdmin],
+    onRequest: [fastify.authenticateAdmin],
     schema: {
       response: {
         200: SuccessResponse(Type.Array(UserResponse)),
@@ -72,7 +72,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
   }, getUsers);
 
   fastify.get<{ Params: { id: string } }>('/:id', {
-    onRequest: [fastify.authenticate],
+    onRequest: [fastify.authenticateOwnResourceOrAdmin],
     schema: {
       params: Type.Object({ id: Type.String({ format: 'uuid' }) }),
       response: {
@@ -90,7 +90,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
 
   fastify.post('/', {
-    onRequest: [fastify.authenticateSuperAdmin],
+    onRequest: [fastify.authenticateAdmin],
     schema: {
       body: UserCreateBody,
       response: {
@@ -105,9 +105,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
     },
   }, createUser);
 
-  // Update user (self or super admin)
+  // Update user (self or admin)
   fastify.put<{ Params: { id: string } }>('/:id', {
-    onRequest: [fastify.authenticate],
+    onRequest: [fastify.authenticateOwnResourceOrAdmin],
     schema: {
       params: Type.Object({ id: Type.String({ format: 'uuid' }) }),
       // Accept arbitrary updatable fields (all except email/password/id are filtered server-side)
@@ -117,7 +117,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         404: ErrorResponse,
       },
       tags: ['User'],
-      summary: 'Update user profile (self or SUPER_ADMIN)',
+      summary: 'Update user profile (self or ADMIN)',
       security: [{ bearerAuth: [] }],
     },
   }, updateUser);
