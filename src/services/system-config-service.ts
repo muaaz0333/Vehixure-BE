@@ -639,7 +639,7 @@ export class SystemConfigService {
         DELETE FROM system_config WHERE id = $1
       `, [configId]);
       
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
       
     } finally {
       await client.end();
