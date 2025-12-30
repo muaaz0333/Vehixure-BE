@@ -195,7 +195,7 @@ export class ReminderService {
         UPDATE reminder_schedules 
         SET status = 'FAILED', failure_reason = $2
         WHERE id = $1
-      `, [reminderId, error.message]);
+      `, [reminderId, error instanceof Error ? error.message : 'Unknown error']);
       
       console.error('❌ Error sending reminder:', error);
       return false;

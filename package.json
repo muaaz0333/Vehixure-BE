@@ -8,6 +8,7 @@
     "lint:fix": "eslint . --fix",
     "check:types": "tsc --noEmit",
     "build": "npx esbuild src/**/*.ts --platform=node --outdir=build --resolve-extensions=.js",
+    "vercel-build": "npx esbuild src/**/*.ts --platform=node --outdir=build --resolve-extensions=.js",
     "build:docker:prod": "docker build . -t my-fastify-app --build-arg APP_ENV=production",
     "start": "node build",
     "dev": "tsx watch src .env | pino-pretty --colorize",

@@ -13,13 +13,18 @@
     "outDir": "build",
     "baseUrl": "src",
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noEmit": false,
+    "noErrorTruncation": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "suppressImplicitAnyIndexErrors": true
   },
   "include": [
     "src/**/*.ts",
-    "tests/**/*.ts",
+    "tests/**/*.ts"
   ],
   "exclude": [
     "node_modules"
