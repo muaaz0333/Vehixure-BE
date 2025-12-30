@@ -387,7 +387,7 @@ export class SystemConfigService {
       `);
       
       console.log('📊 ERPS System Configuration Summary:');
-      summary.rows.forEach(row => {
+      summary.rows.forEach((row: { config_category: string; active_count: number; count: number }) => {
         console.log(`- ${row.config_category}: ${row.active_count}/${row.count} active`);
       });
       
@@ -760,7 +760,7 @@ export class SystemConfigService {
         ORDER BY priority_order, config_name
       `, [category]);
       
-      return result.rows.map(row => ({
+      return result.rows.map((row: Record<string, unknown>) => ({
         id: row.id,
         key: row.config_key,
         name: row.config_name,

@@ -38,6 +38,10 @@
     "@ffprobe-installer/ffprobe": "^2.1.2",
     "@sinclair/typebox": "^0.34.9",
     "@types/bcrypt": "^6.0.0",
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^22.19.3",
+    "@types/nodemailer": "^7.0.4",
+    "@types/pg": "^8.11.6",
     "agora-access-token": "^2.0.4",
     "ajv": "^8.17.1",
     "bcrypt": "^6.0.0",
@@ -56,12 +60,10 @@
     "reflect-metadata": "^0.2.2",
     "save": "^2.9.0",
     "twilio": "^5.10.4",
-    "typeorm": "^0.3.25"
+    "typeorm": "^0.3.25",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/ejs": "^3.1.5",
-    "@types/node": "^22.19.3",
-    "@types/nodemailer": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^8.16.0",
     "@typescript-eslint/parser": "^8.16.0",
     "esbuild": "^0.24.0",
@@ -71,7 +73,6 @@
     "pino-pretty": "^13.0.0",
     "prettier": "^3.4.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.9.3",
     "vitest": "^2.1.6"
   }
 }
