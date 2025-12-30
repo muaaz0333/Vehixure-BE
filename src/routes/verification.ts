@@ -140,7 +140,7 @@ export default async function verificationRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    resendVerificationSMS
+    resendVerificationSMS as any
   );
 
   fastify.get(
@@ -162,6 +162,6 @@ export default async function verificationRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    getInstallerVerificationHistory
+    getInstallerVerificationHistory as any
   );
 }
