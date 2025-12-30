@@ -27,5 +27,3 @@ export const sendSms = async (to: string, body: string): Promise<void> => {
     throw error;
   }
 };
-
-export default sendSms;
