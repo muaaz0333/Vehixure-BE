@@ -39,7 +39,7 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Manually verify a warranty when installer is unavailable. Creates audit trail entry marked as ADMIN_OVERRIDE.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.adminVerifyWarranty.bind(erpsAdminController)
+    handler: erpsAdminController.adminVerifyWarranty.bind(erpsAdminController) as any
   });
 
   /**
@@ -67,7 +67,7 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Manually activate a warranty, skipping customer terms acceptance. Creates audit trail entry.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.adminActivateWarranty.bind(erpsAdminController)
+    handler: erpsAdminController.adminActivateWarranty.bind(erpsAdminController) as any
   });
 
   /**
@@ -94,7 +94,7 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Manually verify an inspection when inspector is unavailable. Creates audit trail entry marked as ADMIN_OVERRIDE.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.adminVerifyInspection.bind(erpsAdminController)
+    handler: erpsAdminController.adminVerifyInspection.bind(erpsAdminController) as any
   });
 
   // ===== USER ROLE MANAGEMENT ROUTES =====
@@ -144,7 +144,7 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Change user partnerRole (Staff to Installer, etc.), account status, or reassign to different partner account. All changes are logged in audit trail.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.updateUserRole.bind(erpsAdminController)
+    handler: erpsAdminController.updateUserRole.bind(erpsAdminController) as any
   });
 
   /**
@@ -174,7 +174,7 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Move a user from one partner account to another. Logged in audit trail.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.reassignUserAccount.bind(erpsAdminController)
+    handler: erpsAdminController.reassignUserAccount.bind(erpsAdminController) as any
   });
 
   // ===== AUDIT HISTORY ROUTES =====
@@ -198,7 +198,7 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Get complete audit history for a warranty. Only visible to ERPS Admin.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.getWarrantyAuditHistory.bind(erpsAdminController)
+    handler: erpsAdminController.getWarrantyAuditHistory.bind(erpsAdminController) as any
   });
 
   /**
@@ -220,6 +220,6 @@ export default async function erpsAdminRoutes(fastify: FastifyInstance) {
       description: 'Get complete audit history for an inspection. Only visible to ERPS Admin.',
       security: [{ bearerAuth: [] }],
     },
-    handler: erpsAdminController.getInspectionAuditHistory.bind(erpsAdminController)
+    handler: erpsAdminController.getInspectionAuditHistory.bind(erpsAdminController) as any
   });
 }

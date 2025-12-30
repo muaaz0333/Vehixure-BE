@@ -47,7 +47,7 @@ export default async function customerActivationRoutes(fastify: FastifyInstance)
       summary: 'Get warranty activation details',
       description: 'Get warranty details for customer activation page. Public endpoint accessed via token.',
     },
-    handler: customerActivationController.getActivationDetails.bind(customerActivationController)
+    handler: customerActivationController.getActivationDetails.bind(customerActivationController) as any
   });
 
   /**
@@ -76,7 +76,7 @@ export default async function customerActivationRoutes(fastify: FastifyInstance)
       summary: 'Get warranty terms and conditions',
       description: 'Get warranty terms for customer to review before accepting. Public endpoint.',
     },
-    handler: customerActivationController.getWarrantyTerms.bind(customerActivationController)
+    handler: customerActivationController.getWarrantyTerms.bind(customerActivationController) as any
   });
 
   /**
@@ -117,7 +117,7 @@ export default async function customerActivationRoutes(fastify: FastifyInstance)
       summary: 'Accept terms and activate warranty',
       description: 'Customer accepts warranty terms to complete activation. Public endpoint.',
     },
-    handler: customerActivationController.acceptTermsAndActivate.bind(customerActivationController)
+    handler: customerActivationController.acceptTermsAndActivate.bind(customerActivationController) as any
   });
 
   /**
@@ -147,6 +147,6 @@ export default async function customerActivationRoutes(fastify: FastifyInstance)
       description: 'Resend warranty activation email and SMS to customer. Requires authentication.',
       security: [{ bearerAuth: [] }],
     },
-    handler: customerActivationController.resendActivationEmail.bind(customerActivationController)
+    handler: customerActivationController.resendActivationEmail.bind(customerActivationController) as any
   });
 }
