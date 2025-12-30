@@ -632,7 +632,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.getAllSystemConfig.bind(systemConfigController)
+    systemConfigController.getAllSystemConfig.bind(systemConfigController) as any
   );
 
   // Get system configuration summary
@@ -651,7 +651,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.getConfigSummary.bind(systemConfigController)
+    systemConfigController.getConfigSummary.bind(systemConfigController) as any
   );
 
   // Get system configuration by category
@@ -673,7 +673,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.getConfigByCategory.bind(systemConfigController)
+    systemConfigController.getConfigByCategory.bind(systemConfigController) as any
   );
 
   // Get system configuration by ID
@@ -696,7 +696,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.getConfigById.bind(systemConfigController)
+    systemConfigController.getConfigById.bind(systemConfigController) as any
   );
 
   // Create system configuration
@@ -718,7 +718,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.createSystemConfig.bind(systemConfigController)
+    systemConfigController.createSystemConfig.bind(systemConfigController) as any
   );
 
   // Update system configuration
@@ -743,7 +743,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.updateSystemConfig.bind(systemConfigController)
+    systemConfigController.updateSystemConfig.bind(systemConfigController) as any
   );
 
   // Toggle system configuration status
@@ -770,7 +770,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.toggleConfigStatus.bind(systemConfigController)
+    systemConfigController.toggleConfigStatus.bind(systemConfigController) as any
   );
 
   // Delete system configuration
@@ -794,7 +794,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.deleteSystemConfig.bind(systemConfigController)
+    systemConfigController.deleteSystemConfig.bind(systemConfigController) as any
   );
 
   // Initialize ERPS default configurations
@@ -814,7 +814,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    systemConfigController.initializeERPSDefaults.bind(systemConfigController)
+    systemConfigController.initializeERPSDefaults.bind(systemConfigController) as any
   );
 
   // ===== CRON JOB MANAGEMENT ROUTES =====
@@ -862,7 +862,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    cronJobController.getCronJobStatus.bind(cronJobController)
+    cronJobController.getCronJobStatus.bind(cronJobController) as any
   );
 
   // Start all cron jobs
@@ -882,7 +882,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    cronJobController.startCronJobs.bind(cronJobController)
+    cronJobController.startCronJobs.bind(cronJobController) as any
   );
 
   // Stop all cron jobs
@@ -902,7 +902,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    cronJobController.stopCronJobs.bind(cronJobController)
+    cronJobController.stopCronJobs.bind(cronJobController) as any
   );
 
   // Manually trigger reminder processing
@@ -922,7 +922,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    cronJobController.triggerReminderProcessing.bind(cronJobController)
+    cronJobController.triggerReminderProcessing.bind(cronJobController) as any
   );
 
   // Manually trigger grace period processing
@@ -942,7 +942,7 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    cronJobController.triggerGracePeriodProcessing.bind(cronJobController)
+    cronJobController.triggerGracePeriodProcessing.bind(cronJobController) as any
   );
 
   // Get reminder statistics
@@ -961,6 +961,6 @@ export default async function adminRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    cronJobController.getReminderStatistics.bind(cronJobController)
+    cronJobController.getReminderStatistics.bind(cronJobController) as any
   );
 }
