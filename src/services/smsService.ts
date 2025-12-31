@@ -25,6 +25,41 @@ export class SMSService {
   }
 
   /**
+   * Send a test SMS to verify Twilio configuration
+   */
+  static async sendTestSMS(mobileNumber: string): Promise<{ success: boolean; message: string; sid?: string }> {
+    const message = `ERPS Test SMS
+
+This is a test message from ERPS system.
+If you received this, SMS functionality is working correctly!
+
+Timestamp: ${new Date().toISOString()}
+
+ERPS Team`;
+
+    try {
+      const result = await client.messages.create({
+        body: message,
+        from: fromNumber,
+        to: mobileNumber,
+      });
+      
+      console.log(`✅ Test SMS sent to ${mobileNumber}, SID: ${result.sid}`);
+      return { 
+        success: true, 
+        message: `Test SMS sent successfully to ${mobileNumber}`,
+        sid: result.sid 
+      };
+    } catch (error: any) {
+      console.error('❌ Failed to send test SMS:', error);
+      return { 
+        success: false, 
+        message: `Failed to send SMS: ${error.message}` 
+      };
+    }
+  }
+
+  /**
    * Send warranty verification SMS to installer
    */
   static async sendWarrantyVerificationSMS(
@@ -54,7 +89,7 @@ ERPS Team`;
 
     try {
       // In development mode, skip actual SMS sending for testing
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development' && !process.env.FORCE_SMS_SEND) {
         console.log(`[DEV MODE] Would send warranty verification SMS to ${mobileNumber}`);
         console.log(`[DEV MODE] Message: ${message}`);
         console.log(`[DEV MODE] SMS sending skipped in development mode`);

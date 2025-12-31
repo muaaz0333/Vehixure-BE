@@ -10,6 +10,7 @@ import verificationEndpoints from "./verification-endpoints.js";
 import dashboardRoutes from "./dashboard.js";
 import erpsAdminRoutes from "./erps-admin.js";
 import customerActivationRoutes from "./customer-activation.js";
+import { SMSService } from "../services/smsService.js";
 const routes = async (server) => {
   server.get("/", {
     schema: {
@@ -29,6 +30,40 @@ const routes = async (server) => {
     status: "ok",
     timestamp: (/* @__PURE__ */ new Date()).toISOString()
   }));
+  server.post("/api/v1/test-sms", {
+    schema: {
+      body: {
+        type: "object",
+        required: ["phoneNumber"],
+        properties: {
+          phoneNumber: { type: "string", description: "Phone number in E.164 format (e.g., +923314205166)" }
+        }
+      },
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            success: { type: "boolean" },
+            message: { type: "string" },
+            sid: { type: "string" }
+          }
+        }
+      },
+      tags: ["Test"],
+      summary: "Test SMS functionality"
+    }
+  }, async (request, reply) => {
+    const { phoneNumber } = request.body;
+    const formattedNumber = SMSService.formatPhoneNumber(phoneNumber);
+    if (!SMSService.validatePhoneNumber(formattedNumber)) {
+      return reply.code(400).send({
+        success: false,
+        message: `Invalid phone number format. Please use E.164 format (e.g., +923314205166). Got: ${formattedNumber}`
+      });
+    }
+    const result = await SMSService.sendTestSMS(formattedNumber);
+    return reply.code(result.success ? 200 : 500).send(result);
+  });
   await server.register(verificationEndpoints, { prefix: "/api/v1" });
   await server.register(customerActivationRoutes, { prefix: "/api/v1/customer" });
   await server.register(authRoutes, { prefix: "/api/v1/auth" });

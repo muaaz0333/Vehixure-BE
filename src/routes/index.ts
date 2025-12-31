@@ -11,6 +11,7 @@ import verificationEndpoints from './verification-endpoints.js';
 import dashboardRoutes from './dashboard.js';
 import erpsAdminRoutes from './erps-admin.js';
 import customerActivationRoutes from './customer-activation.js';
+import { SMSService } from '../services/smsService.js';
 
 const routes: FastifyPluginAsync = async (server) => {
   // Health check
@@ -32,6 +33,47 @@ const routes: FastifyPluginAsync = async (server) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
   }));
+
+  // Test SMS endpoint (for testing Twilio configuration)
+  server.post('/api/v1/test-sms', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['phoneNumber'],
+        properties: {
+          phoneNumber: { type: 'string', description: 'Phone number in E.164 format (e.g., +923314205166)' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            sid: { type: 'string' }
+          }
+        }
+      },
+      tags: ['Test'],
+      summary: 'Test SMS functionality'
+    }
+  }, async (request, reply) => {
+    const { phoneNumber } = request.body as { phoneNumber: string };
+    
+    // Format the phone number
+    const formattedNumber = SMSService.formatPhoneNumber(phoneNumber);
+    
+    // Validate phone number
+    if (!SMSService.validatePhoneNumber(formattedNumber)) {
+      return reply.code(400).send({
+        success: false,
+        message: `Invalid phone number format. Please use E.164 format (e.g., +923314205166). Got: ${formattedNumber}`
+      });
+    }
+    
+    const result = await SMSService.sendTestSMS(formattedNumber);
+    return reply.code(result.success ? 200 : 500).send(result);
+  });
 
   // Register verification endpoints first (no authentication)
   await server.register(verificationEndpoints, { prefix: '/api/v1' });
