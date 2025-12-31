@@ -9,7 +9,7 @@ import swaggerUI from '@fastify/swagger-ui';
 import cors from '@fastify/cors';
 import authMiddleware from './plugins/auth-middleware.js';
 import { SystemConfigService } from './services/system-config-service.js';
-import { CronJobService } from './services/cron-job-service.js';
+import { cronService } from './services/cron-service.js';
 
 const server = fastify({
   ajv: {
@@ -70,12 +70,11 @@ server.addHook('onReady', async () => {
     
     if (autoStartCronJobs !== false) { // Default to true if not set
       // Start ERPS cron jobs automatically
-      const cronJobService = new CronJobService();
-      await cronJobService.startAllCronJobs();
+      cronService.startAllJobs();
       server.log.info('✅ ERPS cron jobs started automatically');
       
-      // Store cron job service instance for graceful shutdown
-      server.decorate('cronJobService', cronJobService);
+      // Store cron service instance for graceful shutdown
+      server.decorate('cronService', cronService);
     } else {
       server.log.info('⏸️ ERPS cron jobs auto-start disabled');
     }
@@ -89,8 +88,8 @@ server.addHook('onReady', async () => {
 // Graceful shutdown - stop cron jobs
 server.addHook('onClose', async () => {
   try {
-    if (server.cronJobService) {
-      server.cronJobService.stopAllCronJobs();
+    if (server.cronService) {
+      server.cronService.stopAllJobs();
       server.log.info('✅ ERPS cron jobs stopped gracefully');
     }
   } catch (error) {

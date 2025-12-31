@@ -1,11 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { CronJobService } from '../services/cron-job-service.js';
+import { cronService } from '../services/cron-service.js';
+import { ReminderService } from '../services/reminder-service.js';
 
 export class CronJobController {
-  private cronJobService: CronJobService;
+  private reminderService: ReminderService;
 
   constructor() {
-    this.cronJobService = new CronJobService();
+    this.reminderService = new ReminderService();
   }
 
   /**
@@ -16,14 +17,16 @@ export class CronJobController {
     reply: FastifyReply
   ) {
     try {
-      const status = this.cronJobService.getCronJobStatus();
-      const statistics = await this.cronJobService.getReminderStatistics();
+      const status = cronService.getJobStatus();
+      const statistics = cronService.getJobStatistics();
+      const reminderStats = await this.reminderService.getReminderStatistics();
 
       return reply.status(200).send({
         success: true,
         data: {
           cronJobs: status,
-          reminderStatistics: statistics
+          jobStatistics: statistics,
+          reminderStatistics: reminderStats
         }
       });
     } catch (error) {
@@ -44,7 +47,7 @@ export class CronJobController {
     reply: FastifyReply
   ) {
     try {
-      await this.cronJobService.startAllCronJobs();
+      cronService.startAllJobs();
 
       return reply.status(200).send({
         success: true,
@@ -68,7 +71,7 @@ export class CronJobController {
     reply: FastifyReply
   ) {
     try {
-      this.cronJobService.stopAllCronJobs();
+      cronService.stopAllJobs();
 
       return reply.status(200).send({
         success: true,
@@ -92,12 +95,11 @@ export class CronJobController {
     reply: FastifyReply
   ) {
     try {
-      const result = await this.cronJobService.triggerReminderProcessing();
+      await cronService.triggerJob('reminder-processing');
 
       return reply.status(200).send({
         success: true,
-        data: result,
-        message: `Reminder processing completed: ${result.sent} sent, ${result.failed} failed`
+        message: 'Reminder processing triggered successfully'
       });
     } catch (error) {
       request.log.error('Error triggering reminder processing:', error);
@@ -117,18 +119,41 @@ export class CronJobController {
     reply: FastifyReply
   ) {
     try {
-      const expiredCount = await this.cronJobService.triggerGracePeriodProcessing();
+      await cronService.triggerJob('grace-period-processing');
 
       return reply.status(200).send({
         success: true,
-        data: { expiredCount },
-        message: `Grace period processing completed: ${expiredCount} warranties lapsed`
+        message: 'Grace period processing triggered successfully'
       });
     } catch (error) {
       request.log.error('Error triggering grace period processing:', error);
       return reply.status(500).send({
         success: false,
         message: 'Failed to trigger grace period processing',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Manually trigger customer activation reminders
+   */
+  async triggerCustomerActivationReminders(
+    request: FastifyRequest, 
+    reply: FastifyReply
+  ) {
+    try {
+      await cronService.triggerJob('customer-activation-reminders');
+
+      return reply.status(200).send({
+        success: true,
+        message: 'Customer activation reminders triggered successfully'
+      });
+    } catch (error) {
+      request.log.error('Error triggering customer activation reminders:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Failed to trigger customer activation reminders',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
@@ -142,7 +167,7 @@ export class CronJobController {
     reply: FastifyReply
   ) {
     try {
-      const statistics = await this.cronJobService.getReminderStatistics();
+      const statistics = await this.reminderService.getReminderStatistics();
 
       return reply.status(200).send({
         success: true,

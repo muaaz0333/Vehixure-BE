@@ -9,6 +9,7 @@ import { AnnualInspection } from "../entities/AnnualInspection.js";
 import { AuditHistory } from "../entities/AuditHistory.js";
 import { SystemConfig } from "../entities/SystemConfig.js";
 import { PartnerAccount } from "../entities/PartnerAccount.js";
+import { VerificationToken } from "../entities/VerificationToken.js";
 export let AppDataSource;
 const typeormPlugin = async (server) => {
   try {
@@ -31,7 +32,8 @@ const typeormPlugin = async (server) => {
         Photo,
         AnnualInspection,
         AuditHistory,
-        SystemConfig
+        SystemConfig,
+        VerificationToken
       ]
     });
     await AppDataSource.initialize();

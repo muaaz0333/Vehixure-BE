@@ -415,7 +415,7 @@ export class WarrantyRegistrationController {
 
         // Send customer notification (email + SMS)
         if (warranty.email && warranty.phoneNumber) {
-          const activationToken = CustomerNotificationService.generateActivationToken(
+          const activationToken = await CustomerNotificationService.generateActivationToken(
             warranty.id,
             warranty.email,
             warranty.phoneNumber

@@ -49,7 +49,7 @@ export class ERPSAdminController {
         isCurrentVersion: true
       });
       if (!skipCustomerNotification && warranty.email && warranty.phoneNumber) {
-        const activationToken = CustomerNotificationService.generateActivationToken(
+        const activationToken = await CustomerNotificationService.generateActivationToken(
           warrantyId,
           warranty.email,
           warranty.phoneNumber

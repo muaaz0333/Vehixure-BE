@@ -1,12 +1,20 @@
 import cron from 'node-cron';
 import { ReminderService } from './reminder-service.js';
+import { CustomerActivationReminderService } from './customer-activation-reminder-service.js';
+import { VerificationTokenService } from './verification-token-service.js';
+
+// Type for scheduled task
+type ScheduledTask = ReturnType<typeof cron.schedule>;
 
 export class CronService {
   private reminderService: ReminderService;
-  private jobs: Map<string, cron.ScheduledTask> = new Map();
+  private customerActivationReminderService: CustomerActivationReminderService;
+  private jobs: Map<string, ScheduledTask> = new Map();
+  private jobRunningStatus: Map<string, boolean> = new Map();
 
   constructor() {
     this.reminderService = new ReminderService();
+    this.customerActivationReminderService = new CustomerActivationReminderService();
   }
 
   /**
@@ -17,6 +25,8 @@ export class CronService {
     
     this.startReminderProcessingJob();
     this.startGracePeriodProcessingJob();
+    this.startCustomerActivationReminderJob();
+    this.startTokenCleanupJob();
     this.startDailyMaintenanceJob();
     
     console.log('✅ All cron jobs started successfully');
@@ -30,15 +40,18 @@ export class CronService {
     
     this.jobs.forEach((job, name) => {
       job.stop();
+      this.jobRunningStatus.set(name, false);
       console.log(`   Stopped: ${name}`);
     });
     
     this.jobs.clear();
+    this.jobRunningStatus.clear();
     console.log('✅ All cron jobs stopped');
   }
 
   /**
    * Process pending reminders every hour
+   * Sends inspection due reminders (11-month, 30-day, due date)
    */
   private startReminderProcessingJob(): void {
     const job = cron.schedule('0 * * * *', async () => {
@@ -51,12 +64,11 @@ export class CronService {
         console.error('❌ Error in reminder processing job:', error);
       }
     }, {
-      scheduled: false,
       timezone: 'Australia/Sydney'
     });
     
-    job.start();
     this.jobs.set('reminder-processing', job);
+    this.jobRunningStatus.set('reminder-processing', true);
     console.log('   ✅ Reminder processing job scheduled (hourly)');
   }
 
@@ -74,13 +86,57 @@ export class CronService {
         console.error('❌ Error in grace period processing job:', error);
       }
     }, {
-      scheduled: false,
       timezone: 'Australia/Sydney'
     });
     
-    job.start();
     this.jobs.set('grace-period-processing', job);
+    this.jobRunningStatus.set('grace-period-processing', true);
     console.log('   ✅ Grace period processing job scheduled (daily at 2 AM)');
+  }
+
+  /**
+   * Send customer activation reminders twice daily (9 AM and 3 PM)
+   * Reminds customers who haven't activated their warranty after installer verification
+   */
+  private startCustomerActivationReminderJob(): void {
+    const job = cron.schedule('0 9,15 * * *', async () => {
+      console.log('🕐 Running customer activation reminder processing...');
+      
+      try {
+        const result = await this.customerActivationReminderService.processActivationReminders();
+        console.log(`✅ Customer activation reminders: ${result.sent} sent, ${result.skipped} skipped, ${result.failed} failed`);
+      } catch (error) {
+        console.error('❌ Error in customer activation reminder job:', error);
+      }
+    }, {
+      timezone: 'Australia/Sydney'
+    });
+    
+    this.jobs.set('customer-activation-reminders', job);
+    this.jobRunningStatus.set('customer-activation-reminders', true);
+    console.log('   ✅ Customer activation reminder job scheduled (daily at 9 AM and 3 PM)');
+  }
+
+  /**
+   * Clean up expired verification tokens daily at 4 AM
+   */
+  private startTokenCleanupJob(): void {
+    const job = cron.schedule('0 4 * * *', async () => {
+      console.log('🕐 Running token cleanup...');
+      
+      try {
+        const deletedCount = await VerificationTokenService.cleanupExpiredTokens();
+        console.log(`✅ Token cleanup complete: ${deletedCount} expired tokens removed`);
+      } catch (error) {
+        console.error('❌ Error in token cleanup job:', error);
+      }
+    }, {
+      timezone: 'Australia/Sydney'
+    });
+    
+    this.jobs.set('token-cleanup', job);
+    this.jobRunningStatus.set('token-cleanup', true);
+    console.log('   ✅ Token cleanup job scheduled (daily at 4 AM)');
   }
 
   /**
@@ -114,26 +170,32 @@ export class CronService {
         console.error('❌ Error in daily maintenance job:', error);
       }
     }, {
-      scheduled: false,
       timezone: 'Australia/Sydney'
     });
     
-    job.start();
     this.jobs.set('daily-maintenance', job);
+    this.jobRunningStatus.set('daily-maintenance', true);
     console.log('   ✅ Daily maintenance job scheduled (daily at 3 AM)');
   }
 
   /**
    * Get status of all cron jobs
    */
-  getJobStatus(): { [jobName: string]: { running: boolean; nextRun?: Date } } {
-    const status: { [jobName: string]: { running: boolean; nextRun?: Date } } = {};
+  getJobStatus(): { [jobName: string]: { running: boolean; description: string } } {
+    const jobDescriptions: { [key: string]: string } = {
+      'reminder-processing': 'Processes inspection due reminders (hourly)',
+      'grace-period-processing': 'Processes warranty grace period expiry (daily at 2 AM)',
+      'customer-activation-reminders': 'Sends reminders to customers who haven\'t activated warranty (9 AM & 3 PM)',
+      'token-cleanup': 'Cleans up expired verification tokens (daily at 4 AM)',
+      'daily-maintenance': 'Daily system maintenance and reporting (daily at 3 AM)'
+    };
+
+    const status: { [jobName: string]: { running: boolean; description: string } } = {};
     
-    this.jobs.forEach((job, name) => {
+    this.jobs.forEach((_, name) => {
       status[name] = {
-        running: job.running,
-        // Note: node-cron doesn't provide next run time directly
-        // This would need to be calculated based on the cron expression
+        running: this.jobRunningStatus.get(name) || false,
+        description: jobDescriptions[name] || 'Unknown job'
       };
     });
     
@@ -147,81 +209,34 @@ export class CronService {
     console.log(`🔧 Manually triggering job: ${jobName}`);
     
     switch (jobName) {
-      case 'reminder-processing':
-        const result = await this.reminderService.processPendingReminders();
-        console.log(`✅ Manual reminder processing: ${result.sent} sent, ${result.failed} failed`);
+      case 'reminder-processing': {
+        const reminderResult = await this.reminderService.processPendingReminders();
+        console.log(`✅ Manual reminder processing: ${reminderResult.sent} sent, ${reminderResult.failed} failed`);
         break;
-        
-      case 'grace-period-processing':
+      }
+      case 'grace-period-processing': {
         const expiredCount = await this.reminderService.processGracePeriodExpiry();
         console.log(`✅ Manual grace period processing: ${expiredCount} warranties lapsed`);
         break;
-        
-      case 'daily-maintenance':
-        const stats = await this.reminderService.getReminderStatistics();
+      }
+      case 'customer-activation-reminders': {
+        const activationResult = await this.customerActivationReminderService.processActivationReminders();
+        console.log(`✅ Manual customer activation reminders: ${activationResult.sent} sent, ${activationResult.skipped} skipped`);
+        break;
+      }
+      case 'token-cleanup': {
+        const deletedCount = await VerificationTokenService.cleanupExpiredTokens();
+        console.log(`✅ Manual token cleanup: ${deletedCount} tokens removed`);
+        break;
+      }
+      case 'daily-maintenance': {
+        await this.reminderService.getReminderStatistics();
         console.log('✅ Manual maintenance complete - stats retrieved');
         break;
-        
+      }
       default:
         throw new Error(`Unknown job: ${jobName}`);
     }
-  }
-
-  /**
-   * Add a custom cron job
-   */
-  addCustomJob(
-    name: string, 
-    cronExpression: string, 
-    task: () => Promise<void>,
-    timezone: string = 'Australia/Sydney'
-  ): void {
-    if (this.jobs.has(name)) {
-      throw new Error(`Job ${name} already exists`);
-    }
-    
-    const job = cron.schedule(cronExpression, task, {
-      scheduled: false,
-      timezone
-    });
-    
-    job.start();
-    this.jobs.set(name, job);
-    
-    console.log(`✅ Custom job '${name}' scheduled with expression: ${cronExpression}`);
-  }
-
-  /**
-   * Remove a custom cron job
-   */
-  removeCustomJob(name: string): void {
-    const job = this.jobs.get(name);
-    if (!job) {
-      throw new Error(`Job ${name} not found`);
-    }
-    
-    job.stop();
-    this.jobs.delete(name);
-    
-    console.log(`✅ Custom job '${name}' removed`);
-  }
-
-  /**
-   * Update job schedule
-   */
-  updateJobSchedule(name: string, newCronExpression: string): void {
-    const job = this.jobs.get(name);
-    if (!job) {
-      throw new Error(`Job ${name} not found`);
-    }
-    
-    // Stop the existing job
-    job.stop();
-    
-    // Note: node-cron doesn't support updating schedule directly
-    // You would need to recreate the job with the new schedule
-    console.log(`⚠️  Job schedule update requires job recreation: ${name}`);
-    console.log(`   Current: running, New: ${newCronExpression}`);
   }
 
   /**
@@ -238,9 +253,9 @@ export class CronService {
     let stoppedJobs = 0;
     const jobNames: string[] = [];
     
-    this.jobs.forEach((job, name) => {
+    this.jobs.forEach((_, name) => {
       jobNames.push(name);
-      if (job.running) {
+      if (this.jobRunningStatus.get(name)) {
         runningJobs++;
       } else {
         stoppedJobs++;

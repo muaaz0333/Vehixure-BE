@@ -11,7 +11,7 @@ export class CustomerActivationController {
   async getActivationDetails(request, reply) {
     try {
       const { token } = request.params;
-      const activationData = CustomerNotificationService.validateActivationToken(token);
+      const activationData = await CustomerNotificationService.validateActivationToken(token);
       if (!activationData) {
         return Response.errorResponse(reply, "Invalid or expired activation link", 400);
       }
@@ -71,7 +71,7 @@ export class CustomerActivationController {
   async getWarrantyTerms(request, reply) {
     try {
       const { token } = request.params;
-      const activationData = CustomerNotificationService.validateActivationToken(token);
+      const activationData = await CustomerNotificationService.validateActivationToken(token);
       if (!activationData) {
         return Response.errorResponse(reply, "Invalid or expired activation link", 400);
       }
@@ -151,7 +151,7 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
       if (!acceptTerms) {
         return Response.errorResponse(reply, "You must accept the terms and conditions to activate your warranty", 400);
       }
-      const activationData = CustomerNotificationService.validateActivationToken(token);
+      const activationData = await CustomerNotificationService.validateActivationToken(token);
       if (!activationData) {
         return Response.errorResponse(reply, "Invalid or expired activation link", 400);
       }
@@ -199,7 +199,7 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
         ipAddress: customerIpAddress,
         isCurrentVersion: true
       });
-      CustomerNotificationService.removeActivationToken(token);
+      await CustomerNotificationService.removeActivationToken(token);
       const updatedWarranty = await warrantyRepo.findOne({ where: { id: activationData.warrantyId } });
       return Response.showOne(reply, {
         success: true,
@@ -252,7 +252,7 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
       if (!warranty.email || !warranty.phoneNumber) {
         return Response.errorResponse(reply, "Customer email or phone number not found", 400);
       }
-      const activationToken = CustomerNotificationService.generateActivationToken(
+      const activationToken = await CustomerNotificationService.generateActivationToken(
         warrantyId,
         warranty.email,
         warranty.phoneNumber

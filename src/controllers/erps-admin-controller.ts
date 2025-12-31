@@ -76,7 +76,7 @@ export class ERPSAdminController {
 
       // Send customer notification if not skipped
       if (!skipCustomerNotification && warranty.email && warranty.phoneNumber) {
-        const activationToken = CustomerNotificationService.generateActivationToken(
+        const activationToken = await CustomerNotificationService.generateActivationToken(
           warrantyId,
           warranty.email,
           warranty.phoneNumber

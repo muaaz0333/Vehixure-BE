@@ -23,8 +23,8 @@ export class CustomerActivationController {
     try {
       const { token } = request.params;
 
-      // Validate token
-      const activationData = CustomerNotificationService.validateActivationToken(token);
+      // Validate token (now async - database-backed)
+      const activationData = await CustomerNotificationService.validateActivationToken(token);
       
       if (!activationData) {
         return Response.errorResponse(reply, 'Invalid or expired activation link', 400);
@@ -96,8 +96,8 @@ export class CustomerActivationController {
     try {
       const { token } = request.params;
 
-      // Validate token
-      const activationData = CustomerNotificationService.validateActivationToken(token);
+      // Validate token (now async - database-backed)
+      const activationData = await CustomerNotificationService.validateActivationToken(token);
       
       if (!activationData) {
         return Response.errorResponse(reply, 'Invalid or expired activation link', 400);
@@ -197,8 +197,8 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
         return Response.errorResponse(reply, 'You must accept the terms and conditions to activate your warranty', 400);
       }
 
-      // Validate token
-      const activationData = CustomerNotificationService.validateActivationToken(token);
+      // Validate token (now async - database-backed)
+      const activationData = await CustomerNotificationService.validateActivationToken(token);
       
       if (!activationData) {
         return Response.errorResponse(reply, 'Invalid or expired activation link', 400);
@@ -261,8 +261,8 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
         isCurrentVersion: true
       });
 
-      // Remove activation token
-      CustomerNotificationService.removeActivationToken(token);
+      // Remove activation token (now async - database-backed)
+      await CustomerNotificationService.removeActivationToken(token);
 
       const updatedWarranty = await warrantyRepo.findOne({ where: { id: activationData.warrantyId } });
 
@@ -328,8 +328,8 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
         return Response.errorResponse(reply, 'Customer email or phone number not found', 400);
       }
 
-      // Generate new activation token
-      const activationToken = CustomerNotificationService.generateActivationToken(
+      // Generate new activation token (now async - database-backed)
+      const activationToken = await CustomerNotificationService.generateActivationToken(
         warrantyId,
         warranty.email,
         warranty.phoneNumber

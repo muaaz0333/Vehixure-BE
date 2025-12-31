@@ -1,6 +1,6 @@
-import crypto from 'crypto';
 import { SMSService } from './smsService.js';
 import { EmailService } from './email-service.js';
+import { VerificationTokenService } from './verification-token-service.js';
 
 export interface CustomerActivationToken {
   token: string;
@@ -10,33 +10,32 @@ export interface CustomerActivationToken {
   customerPhone: string;
 }
 
-// Customer activation token expiry: 30 days
-const CUSTOMER_TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
-
 export class CustomerNotificationService {
-  private static activationTokens = new Map<string, CustomerActivationToken>();
 
   /**
-   * Generate customer activation token
+   * Generate customer activation token (database-backed)
+   * This method is kept for backward compatibility but now uses database storage
    */
-  static generateActivationToken(
+  static async generateActivationToken(
     warrantyId: string,
     customerEmail: string,
     customerPhone: string
-  ): CustomerActivationToken {
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + CUSTOMER_TOKEN_EXPIRY_MS);
+  ): Promise<CustomerActivationToken> {
+    // Create token in database (30-day expiry for customer activation)
+    const dbToken = await VerificationTokenService.createToken({
+      type: 'CUSTOMER_ACTIVATION',
+      recordId: warrantyId,
+      customerEmail,
+      customerPhone
+    });
 
-    const activationData: CustomerActivationToken = {
-      token,
-      expiresAt,
+    return {
+      token: dbToken.token,
+      expiresAt: dbToken.expiresAt,
       warrantyId,
       customerEmail,
       customerPhone
     };
-
-    this.activationTokens.set(token, activationData);
-    return activationData;
   }
 
   /**
@@ -175,7 +174,7 @@ Please do not reply to this email.
         `.trim()
       };
 
-      // @ts-ignore - accessing private transporter
+      // @ts-expect-error - accessing private transporter
       const result = await emailService.transporter.sendMail(mailOptions);
       
       if (result.messageId) {
@@ -239,44 +238,32 @@ ERPS Team`;
   }
 
   /**
-   * Validate customer activation token
+   * Validate customer activation token (database-backed)
    */
-  static validateActivationToken(token: string): CustomerActivationToken | null {
-    const activationData = this.activationTokens.get(token);
+  static async validateActivationToken(token: string): Promise<CustomerActivationToken | null> {
+    const validation = await VerificationTokenService.validateToken(token);
     
-    if (!activationData) {
+    if (!validation.valid || !validation.token) {
       return null;
     }
 
-    if (new Date() > activationData.expiresAt) {
-      this.activationTokens.delete(token);
+    if (validation.token.type !== 'CUSTOMER_ACTIVATION') {
       return null;
     }
 
-    return activationData;
+    return {
+      token: validation.token.token,
+      expiresAt: validation.token.expiresAt,
+      warrantyId: validation.token.recordId,
+      customerEmail: validation.token.customerEmail || '',
+      customerPhone: validation.token.customerPhone || ''
+    };
   }
 
   /**
-   * Remove activation token after successful activation
+   * Remove activation token after successful activation (database-backed)
    */
-  static removeActivationToken(token: string): void {
-    this.activationTokens.delete(token);
-  }
-
-  /**
-   * Clean up expired activation tokens
-   */
-  static cleanupExpiredTokens(): void {
-    const now = new Date();
-    for (const [token, data] of this.activationTokens.entries()) {
-      if (now > data.expiresAt) {
-        this.activationTokens.delete(token);
-      }
-    }
+  static async removeActivationToken(token: string): Promise<void> {
+    await VerificationTokenService.markTokenAsUsed(token);
   }
 }
-
-// Clean up expired tokens every hour
-setInterval(() => {
-  CustomerNotificationService.cleanupExpiredTokens();
-}, 60 * 60 * 1000);

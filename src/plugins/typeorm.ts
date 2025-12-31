@@ -10,8 +10,9 @@ import { AnnualInspection } from '../entities/AnnualInspection.js';
 import { AuditHistory } from '../entities/AuditHistory.js';
 import { SystemConfig } from '../entities/SystemConfig.js';
 import { PartnerAccount } from '../entities/PartnerAccount.js';
+import { VerificationToken } from '../entities/VerificationToken.js';
 
-import { CronJobService } from '../services/cron-job-service.js';
+import { CronService } from '../services/cron-service.js';
 
 // Global DataSource instance
 export let AppDataSource: DataSource;
@@ -36,6 +37,7 @@ const typeormPlugin: FastifyPluginAsync = async (server) => {
         AnnualInspection,
         AuditHistory,
         SystemConfig,
+        VerificationToken,
       ],
     });
 
@@ -51,7 +53,7 @@ const typeormPlugin: FastifyPluginAsync = async (server) => {
 declare module 'fastify' {
   interface FastifyInstance {
     db: DataSource;
-    cronJobService?: CronJobService;
+    cronService?: CronService;
   }
 }
 

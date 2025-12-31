@@ -283,7 +283,7 @@ export class WarrantyRegistrationController {
         await this.warrantyRepo.save(warranty);
         await this.logVerificationHistory(warranty.id, "INSTALLER_VERIFIED", warranty.installerId, warranty.installerId);
         if (warranty.email && warranty.phoneNumber) {
-          const activationToken = CustomerNotificationService.generateActivationToken(
+          const activationToken = await CustomerNotificationService.generateActivationToken(
             warranty.id,
             warranty.email,
             warranty.phoneNumber
