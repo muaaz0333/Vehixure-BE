@@ -2,7 +2,7 @@
 
 A modern backend boilerplate, built with Fastify and TypeScript.
 
-## Features
+# Features
 - Fastify server with TypeScript
 - PostgreSQL database via TypeORM
 - Modular route/controller structure
@@ -10,7 +10,7 @@ A modern backend boilerplate, built with Fastify and TypeScript.
 - OpenAPI (Swagger) documentation at `/docs`
 - Ready for Docker deployment
 
-## Getting Started
+# Getting Started
 
 1. **Install dependencies:**
    ```sh
